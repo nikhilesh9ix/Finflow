@@ -1,0 +1,12 @@
+backend/.env
+backend/finflow.db
+backend/.pytest_cache/
+**/__pycache__/
+frontend/dist/
+frontend/node_modules/
+*.pyc
+.venv/
+backend/.venv/
+.mypy_cache/
+.pytest_cache/
+.claude/

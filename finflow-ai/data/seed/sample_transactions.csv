@@ -1,0 +1,14 @@
+date,description,merchant,amount,type,category
+2026-05-01,Salary credit,Employer,125000,credit,Salary/Income
+2026-05-02,Apartment rent,Landlord,32000,debit,Bills
+2026-05-06,Home loan EMI,HDFC Bank,21000,debit,EMI/Loan
+2026-05-12,Mutual fund SIP,Zerodha Coin,18000,debit,Other
+2026-06-01,Salary credit,Employer,125000,credit,Salary/Income
+2026-06-02,Apartment rent,Landlord,32000,debit,Bills
+2026-06-04,Grocery supermarket,FreshMart,8600,debit,Food
+2026-06-06,Home loan EMI,HDFC Bank,21000,debit,EMI/Loan
+2026-06-08,Dinner with friends,Zomato,2400,debit,Food
+2026-06-10,Metro card recharge,Metro,1200,debit,Transport
+2026-06-12,Mutual fund SIP,Zerodha Coin,18000,debit,Other
+2026-06-15,Streaming subscription,Netflix,649,debit,Entertainment
+2026-06-19,Bad row example,,not-a-number,debit,
