@@ -53,7 +53,7 @@ KEYWORD_CATEGORY_MAP: dict[str, str] = {
 }
 
 
-def classify_category(description: str, merchant: str | None, amount: float, provided_category: str | None = None) -> str:
+def classify_category(description: str, merchant: str | None, amount, provided_category: str | None = None) -> str:
     if provided_category and provided_category.strip():
         return provided_category.strip()
 

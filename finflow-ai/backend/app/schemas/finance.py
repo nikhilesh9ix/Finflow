@@ -1,4 +1,5 @@
 from datetime import date
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
@@ -10,7 +11,7 @@ class TransactionCreateRequest(BaseModel):
     description: str = Field(min_length=1, max_length=255)
     merchant: str | None = Field(default=None, max_length=160)
     category: str | None = Field(default=None, max_length=80)
-    amount: float
+    amount: Decimal = Field(gt=0, decimal_places=2)
     transaction_type: str = Field(pattern="^(income|expense|transfer)$")
     source: str = Field(default="manual", max_length=40)
 
@@ -21,51 +22,51 @@ class TransactionResponse(TimestampedResponse):
     description: str
     merchant: str | None
     category: str
-    amount: float
+    amount: Decimal
     transaction_type: str
     source: str
 
 
 class BudgetCreateRequest(BaseModel):
     category: str = Field(min_length=1, max_length=80)
-    monthly_limit: float = Field(gt=0)
+    monthly_limit: Decimal = Field(gt=0, decimal_places=2)
     priority: str = Field(default="normal", max_length=30)
 
 
 class BudgetUpdateRequest(BaseModel):
     category: str | None = Field(default=None, min_length=1, max_length=80)
-    monthly_limit: float | None = Field(default=None, gt=0)
+    monthly_limit: Decimal | None = Field(default=None, gt=0, decimal_places=2)
     priority: str | None = Field(default=None, max_length=30)
 
 
 class BudgetResponse(TimestampedResponse):
     id: int
     category: str
-    monthly_limit: float
+    monthly_limit: Decimal
     priority: str
 
 
 class SavingsGoalCreateRequest(BaseModel):
     name: str = Field(min_length=1, max_length=120)
-    target_amount: float = Field(gt=0)
-    current_amount: float = Field(default=0, ge=0)
+    target_amount: Decimal = Field(gt=0, decimal_places=2)
+    current_amount: Decimal = Field(default=Decimal("0"), ge=0, decimal_places=2)
     target_date: date | None = None
 
 
 class SavingsGoalResponse(TimestampedResponse):
     id: int
     name: str
-    target_amount: float
-    current_amount: float
+    target_amount: Decimal
+    current_amount: Decimal
     target_date: date | None
 
 
 class DebtAccountCreateRequest(BaseModel):
     lender: str = Field(min_length=1, max_length=120)
     debt_type: str = Field(min_length=1, max_length=80)
-    outstanding_amount: float = Field(gt=0)
-    interest_rate: float = Field(ge=0)
-    emi_amount: float = Field(gt=0)
+    outstanding_amount: Decimal = Field(gt=0, decimal_places=2)
+    interest_rate: Decimal = Field(ge=0, decimal_places=3)
+    emi_amount: Decimal = Field(gt=0, decimal_places=2)
     due_day: int = Field(ge=1, le=31)
 
 
@@ -73,26 +74,26 @@ class DebtAccountResponse(TimestampedResponse):
     id: int
     lender: str
     debt_type: str
-    outstanding_amount: float
-    interest_rate: float
-    emi_amount: float
+    outstanding_amount: Decimal
+    interest_rate: Decimal
+    emi_amount: Decimal
     due_day: int
 
 
 class InvestmentProfileUpsertRequest(BaseModel):
     risk_profile: str = Field(default="balanced", max_length=40)
-    monthly_investment_capacity: float = Field(default=0, ge=0)
-    emergency_fund_target: float = Field(default=0, ge=0)
-    emergency_fund_current: float = Field(default=0, ge=0)
+    monthly_investment_capacity: Decimal = Field(default=Decimal("0"), ge=0, decimal_places=2)
+    emergency_fund_target: Decimal = Field(default=Decimal("0"), ge=0, decimal_places=2)
+    emergency_fund_current: Decimal = Field(default=Decimal("0"), ge=0, decimal_places=2)
     notes: str | None = None
 
 
 class InvestmentProfileResponse(TimestampedResponse):
     id: int
     risk_profile: str
-    monthly_investment_capacity: float
-    emergency_fund_target: float
-    emergency_fund_current: float
+    monthly_investment_capacity: Decimal
+    emergency_fund_target: Decimal
+    emergency_fund_current: Decimal
     notes: str | None
 
 
@@ -120,9 +121,9 @@ class CsvUploadResponse(BaseModel):
 class BudgetAlertResponse(BaseModel):
     budget_id: int
     category: str
-    monthly_limit: float
-    spent: float
-    remaining: float
+    monthly_limit: Decimal
+    spent: Decimal
+    remaining: Decimal
     status: str
 
 

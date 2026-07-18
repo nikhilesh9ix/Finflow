@@ -1,32 +1,90 @@
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
 export type User = {
   id: number;
-  name: string;
+  full_name: string;
   email: string;
   monthly_income: number;
-  risk_profile: string;
   currency: string;
 };
 
+// ─── Transactions ─────────────────────────────────────────────────────────────
+
+export type TransactionType = "income" | "expense" | "transfer";
+
 export type Transaction = {
   id: number;
-  posted_at: string;
+  transaction_date: string; // ISO date string: "2026-06-20"
   description: string;
-  merchant: string;
+  merchant: string | null;
   category: string;
   amount: number;
-  transaction_type: "income" | "expense";
+  transaction_type: TransactionType;
   source: string;
 };
+
+// ─── Budgets ──────────────────────────────────────────────────────────────────
+
+export type BudgetStatus = "safe" | "warning" | "over" | "overspent";
 
 export type Budget = {
   id: number;
   category: string;
   monthly_limit: number;
   priority: string;
-  spent: number;
 };
 
-export type Debt = {
+export type BudgetAlert = {
+  budget_id: number;
+  category: string;
+  monthly_limit: number;
+  spent: number;
+  remaining: number;
+  usage_percent: number;
+  status: BudgetStatus;
+};
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+export type CategorySpend = {
+  category: string;
+  amount: number;
+};
+
+export type BudgetHealth = {
+  category: string;
+  spent: number;
+  limit: number;
+  status: "safe" | "warning" | "over";
+};
+
+export type DashboardSummary = {
+  monthly_income: number;     // user's configured salary
+  actual_income: number;      // income transactions received this month
+  monthly_spend: number;      // expense transactions this month
+  projected_savings: number;  // actual_income - monthly_spend
+  savings_rate: number;       // percentage
+  category_spend: CategorySpend[];
+  budget_health: BudgetHealth[];
+  recent_transactions: Transaction[];
+};
+
+// ─── Salary plan ─────────────────────────────────────────────────────────────
+
+export type SalaryAllocation = {
+  bucket: string;
+  amount: number;
+  note: string;
+};
+
+export type SalaryPlan = {
+  income: number;
+  allocations: SalaryAllocation[];
+};
+
+// ─── Debt ─────────────────────────────────────────────────────────────────────
+
+export type DebtAccount = {
   id: number;
   lender: string;
   debt_type: string;
@@ -36,92 +94,65 @@ export type Debt = {
   due_day: number;
 };
 
-export type DashboardSummary = {
-  monthly_income: number;
-  actual_income: number;
-  monthly_spend: number;
-  projected_savings: number;
-  savings_rate: number;
-  category_spend: { category: string; amount: number }[];
-  budget_health: { category: string; spent: number; limit: number; status: string }[];
-  recent_transactions: Transaction[];
+export type DebtStrategy = {
+  method: string;
+  total_outstanding: number;
+  monthly_emi: number;
+  priority: DebtAccount[];
+  insight: string;
 };
 
-export type SalaryAllocation = {
-  bucket: string;
-  percentage: number;
-  amount: number;
-  rationale: string;
+// ─── Investments ──────────────────────────────────────────────────────────────
+
+export type InvestmentProfile = {
+  id: number;
+  risk_profile: string;
+  monthly_investment_capacity: number;
+  emergency_fund_target: number;
+  emergency_fund_current: number;
+  emergency_gap: number;
+  readiness: string;
+  notes: string | null;
 };
 
-export type SalaryPlan = {
-  income: number;
-  monthly_fixed_costs: number;
-  debt_load: number;
-  debt_to_income_ratio: number;
-  strategy_mode: string;
-  warnings: string[];
-  allocations: SalaryAllocation[];
-  reasoning: string[];
-};
-
-export type DebtRecommendation = {
-  rank: number;
-  lender: string;
-  debt_type: string;
-  outstanding_amount: number;
-  interest_rate: number;
-  emi_amount: number;
-  due_day: number;
-  rationale: string;
-};
-
-export type DebtLeak = {
-  title: string;
-  severity: string;
-  evidence: string;
-  recommendation: string;
-};
-
-export type DebtAudit = {
-  debt_to_income_ratio: number;
-  monthly_debt_payment: number;
-  monthly_repayment_budget: number;
-  avalanche_order: DebtRecommendation[];
-  debt_free_months: number;
-  projected_payoff_date: string;
-  warnings: string[];
-  wealth_leaks: DebtLeak[];
-  projection: { month: number; remaining_debt: number }[];
-};
-
-export type InvestmentBucket = {
-  category: string;
-  percentage: number;
-  amount: number;
-  rationale: string;
-};
-
-export type InvestmentRecommendation = {
-  profile_mode: string;
-  risk_tolerance: string;
-  disclaimer: string;
-  buckets: InvestmentBucket[];
-  reasoning: string[];
-  projection_notes: string[];
-};
-
-export type CopilotFact = {
-  label: string;
-  value: string;
-  detail: string;
-};
+// ─── Copilot ─────────────────────────────────────────────────────────────────
 
 export type CopilotResponse = {
   answer: string;
-  confidence: string;
-  provider: string;
-  facts: CopilotFact[];
-  starter_prompts: string[];
-  history_id: number | null;
+  data_status: "ok" | "missing_question" | "missing_transactions";
+};
+
+// ─── Savings goals ───────────────────────────────────────────────────────────
+
+export type SavingsGoal = {
+  id: number;
+  name: string;
+  target_amount: number;
+  current_amount: number;
+  target_date: string | null; // ISO date string
+};
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+export type MonthlySpend = {
+  month: string; // "YYYY-MM"
+  spend: number;
+};
+
+export type IncomeVsExpense = {
+  month: string;
+  income: number;
+  expense: number;
+};
+
+export type TopMerchant = {
+  merchant: string;
+  amount: number;
+};
+
+export type RecurringTransaction = {
+  merchant: string;
+  category: string;
+  average_amount: number;
+  count: number;
 };

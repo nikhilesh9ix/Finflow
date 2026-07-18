@@ -1,5 +1,6 @@
 import csv
 from datetime import date
+from decimal import Decimal, InvalidOperation
 from io import StringIO
 from typing import Any
 
@@ -11,12 +12,14 @@ DEBIT_TYPES = {"debit", "expense", "dr"}
 CREDIT_TYPES = {"credit", "income", "cr"}
 VALID_TYPES = DEBIT_TYPES | CREDIT_TYPES | {"transfer"}
 
+_ZERO = Decimal("0")
+
 
 def normalize_row(row: dict[str, Any]) -> dict[str, str]:
     return {str(key).strip().lower(): str(value).strip() for key, value in row.items() if key is not None}
 
 
-def normalize_transaction_type(raw_type: str | None, amount: float) -> tuple[str, float]:
+def normalize_transaction_type(raw_type: str | None, amount: Decimal) -> tuple[str, Decimal]:
     normalized = (raw_type or "").strip().lower()
     if normalized in DEBIT_TYPES:
         return "expense", -abs(amount)
@@ -26,15 +29,15 @@ def normalize_transaction_type(raw_type: str | None, amount: float) -> tuple[str
         return "transfer", amount
     if normalized in {"income", "expense"}:
         return normalized, amount if normalized == "income" else -abs(amount)
-    if amount > 0:
+    if amount > _ZERO:
         return "income", amount
-    if amount < 0:
+    if amount < _ZERO:
         return "expense", amount
     return "expense", amount
 
 
 def parse_transaction_csv(content: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    reader = csv.DictReader(StringIO(content.lstrip("\ufeff")))
+    reader = csv.DictReader(StringIO(content.lstrip("﻿")))
     if not reader.fieldnames:
         return [], [{"row": 0, "error": "CSV is empty or missing headers"}]
 
@@ -49,7 +52,10 @@ def parse_transaction_csv(content: str) -> tuple[list[dict[str, Any]], list[dict
     for index, raw_row in enumerate(reader, start=2):
         row = normalize_row(raw_row)
         try:
-            amount = float(row["amount"].replace(",", ""))
+            try:
+                amount = Decimal(row["amount"].replace(",", ""))
+            except InvalidOperation:
+                raise ValueError(f"invalid amount: {row['amount']!r}")
             description = row["description"]
             if not description:
                 raise ValueError("description is required")

@@ -1,7 +1,7 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
@@ -11,6 +11,7 @@ from app.schemas import (
     BudgetCreateRequest,
     BudgetUpdateRequest,
     BudgetResponse,
+    ChatHistoryResponse,
     CopilotAskRequest,
     CopilotAskResponse,
     CsvUploadResponse,
@@ -23,9 +24,10 @@ from app.schemas import (
     TransactionCreateRequest,
     TransactionResponse,
 )
+from app.ai.copilot import copilot_answer
+from app.schemas import Page
 from app.services.analytics import (
     budget_alerts,
-    copilot_answer,
     category_breakdown,
     current_month_summary,
     dashboard_summary,
@@ -49,22 +51,27 @@ def _transaction_fingerprint(row: dict) -> tuple:
         row["transaction_date"],
         row["description"].strip().lower(),
         (row.get("merchant") or "").strip().lower(),
-        round(float(row["amount"]), 2),
+        round(row["amount"], 2),
     )
 
 
-@router.get("/transactions", response_model=list[TransactionResponse])
+@router.get("/transactions", response_model=Page[TransactionResponse])
 def list_transactions(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> list[Transaction]:
-    return list(
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> Page:
+    base = select(Transaction).where(Transaction.user_id == current_user.id)
+    total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
+    items = list(
         db.scalars(
-            select(Transaction)
-            .where(Transaction.user_id == current_user.id)
-            .order_by(Transaction.transaction_date.desc(), Transaction.id.desc())
+            base.order_by(Transaction.transaction_date.desc(), Transaction.id.desc())
+            .limit(limit)
+            .offset(offset)
         )
     )
+    return Page(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.post("/transactions", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
@@ -152,7 +159,7 @@ async def upload_transactions_csv(
             item.transaction_date,
             item.description.strip().lower(),
             (item.merchant or "").strip().lower(),
-            round(float(item.amount), 2),
+            round(item.amount, 2),
         )
         for item in existing_rows
     }
@@ -169,12 +176,17 @@ async def upload_transactions_csv(
     return CsvUploadResponse(imported=len(rows_to_import), skipped=len(invalid_rows), errors=invalid_rows[:25])
 
 
-@router.get("/budgets", response_model=list[BudgetResponse])
+@router.get("/budgets", response_model=Page[BudgetResponse])
 def list_budgets(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
-) -> list[Budget]:
-    return list(db.scalars(select(Budget).where(Budget.user_id == current_user.id).order_by(Budget.category)))
+    limit: Annotated[int, Query(ge=1, le=200)] = 100,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> Page:
+    base = select(Budget).where(Budget.user_id == current_user.id)
+    total = db.scalar(select(func.count()).select_from(base.subquery())) or 0
+    items = list(db.scalars(base.order_by(Budget.category).limit(limit).offset(offset)))
+    return Page(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.post("/budgets", response_model=BudgetResponse, status_code=status.HTTP_201_CREATED)
@@ -215,12 +227,20 @@ def update_budget(
     return budget
 
 
-@router.get("/analytics/summary")
+@router.get("/dashboard/summary")
 def get_dashboard_summary(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> dict:
-    return dashboard_summary(db, current_user.id)
+    return dashboard_summary(db, current_user)
+
+
+@router.get("/analytics/summary")
+def get_analytics_summary(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> dict:
+    return dashboard_summary(db, current_user)
 
 
 @router.get("/analytics/monthly-spend")
@@ -285,6 +305,22 @@ def get_investment_profile_summary(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> dict:
     return investment_profile_summary(db, current_user)
+
+
+@router.get("/copilot/history", response_model=list[ChatHistoryResponse])
+def get_copilot_history(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> list:
+    from app.models import ChatHistory as ChatHistoryModel
+    return list(
+        db.scalars(
+            select(ChatHistoryModel)
+            .where(ChatHistoryModel.user_id == current_user.id)
+            .order_by(ChatHistoryModel.created_at.asc())
+            .limit(50)
+        )
+    )
 
 
 @router.post("/copilot/ask")

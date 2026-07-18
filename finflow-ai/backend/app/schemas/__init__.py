@@ -1,4 +1,5 @@
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
+from app.schemas.common import Page
 from app.schemas.finance import (
     BudgetCreateRequest,
     BudgetUpdateRequest,
@@ -21,6 +22,7 @@ from app.schemas.finance import (
 from app.schemas.user import UserResponse
 
 __all__ = [
+    "Page",
     "BudgetCreateRequest",
     "BudgetUpdateRequest",
     "BudgetAlertResponse",

@@ -1,18 +1,26 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { LoadingState } from "./components/LoadingState";
+import { LoadingSkeleton } from "./components/StatePanel";
 import { useAuthStore } from "./store/auth";
-import { BudgetsPage } from "./pages/BudgetsPage";
-import { CopilotPage } from "./pages/CopilotPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { DebtsPage } from "./pages/DebtsPage";
-import { InvestmentsPage } from "./pages/InvestmentsPage";
-import { LoginPage } from "./pages/LoginPage";
-import { NotFoundPage } from "./pages/NotFoundPage";
-import { SalaryPage } from "./pages/SalaryPage";
-import { SettingsPage } from "./pages/SettingsPage";
-import { TransactionsPage } from "./pages/TransactionsPage";
+
+// Code-split every page — initial bundle only ships auth + shell.
+// Each page chunk is fetched on first navigation to that route.
+const DashboardPage    = lazy(() => import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })));
+const TransactionsPage = lazy(() => import("./pages/TransactionsPage").then((m) => ({ default: m.TransactionsPage })));
+const BudgetsPage      = lazy(() => import("./pages/BudgetsPage").then((m) => ({ default: m.BudgetsPage })));
+const SalaryPage       = lazy(() => import("./pages/SalaryPage").then((m) => ({ default: m.SalaryPage })));
+const DebtsPage        = lazy(() => import("./pages/DebtsPage").then((m) => ({ default: m.DebtsPage })));
+const InvestmentsPage  = lazy(() => import("./pages/InvestmentsPage").then((m) => ({ default: m.InvestmentsPage })));
+const CopilotPage      = lazy(() => import("./pages/CopilotPage").then((m) => ({ default: m.CopilotPage })));
+const SettingsPage     = lazy(() => import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
+const LoginPage        = lazy(() => import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })));
+const NotFoundPage     = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
+
+function PageFallback() {
+  return <LoadingSkeleton />;
+}
 
 function ProtectedRoutes() {
   const { token, loading } = useAuthStore();
@@ -29,19 +37,21 @@ export default function App() {
   }, [loadMe]);
 
   return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route element={<ProtectedRoutes />}>
-        <Route index element={<DashboardPage />} />
-        <Route path="transactions" element={<TransactionsPage />} />
-        <Route path="budgets" element={<BudgetsPage />} />
-        <Route path="salary" element={<SalaryPage />} />
-        <Route path="debts" element={<DebtsPage />} />
-        <Route path="investments" element={<InvestmentsPage />} />
-        <Route path="copilot" element={<CopilotPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Route>
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+    <Suspense fallback={<PageFallback />}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route element={<ProtectedRoutes />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="transactions" element={<TransactionsPage />} />
+          <Route path="budgets" element={<BudgetsPage />} />
+          <Route path="salary" element={<SalaryPage />} />
+          <Route path="debts" element={<DebtsPage />} />
+          <Route path="investments" element={<InvestmentsPage />} />
+          <Route path="copilot" element={<CopilotPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
   );
 }

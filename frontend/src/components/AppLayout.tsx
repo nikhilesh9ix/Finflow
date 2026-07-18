@@ -42,7 +42,7 @@ export function AppLayout() {
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Welcome back</p>
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-905 dark:text-white mt-0.5">{user?.name ?? "Demo user"}</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight text-slate-905 dark:text-white mt-0.5">{user?.full_name ?? "Demo user"}</h1>
             </div>
             <div className="flex items-center gap-2">
               <button className="icon-button" onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} type="button">

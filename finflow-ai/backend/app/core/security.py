@@ -1,59 +1,72 @@
+"""
+Security utilities: password hashing (Argon2) and JWT tokens (PyJWT).
+
+Password hashing uses Argon2id — the 2015 Password Hashing Competition winner.
+It is memory-hard (GPU-resistant) and the current OWASP recommendation over
+PBKDF2 or bcrypt for new systems.
+
+JWT uses HS256. For multi-service deployments, prefer RS256 with a key pair.
+"""
+
 from datetime import datetime, timedelta, timezone
-import hashlib
-import hmac
-import secrets
 from typing import Any
 
-from jose import JWTError, jwt
+import jwt
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerifyMismatchError
 
 from app.core.config import settings
 
 JWT_ALGORITHM = "HS256"
-PASSWORD_HASH_ALGORITHM = "pbkdf2_sha256"
-PASSWORD_HASH_ITERATIONS = 260_000
+
+# Argon2id with OWASP-recommended parameters (2023):
+# time_cost=2, memory_cost=19456 (19 MB), parallelism=1 is the minimum.
+# We use slightly higher settings for better resistance.
+_ph = PasswordHasher(
+    time_cost=3,
+    memory_cost=65536,  # 64 MB
+    parallelism=4,
+    hash_len=32,
+    salt_len=16,
+)
 
 
 def get_password_hash(password: str) -> str:
-    salt = secrets.token_bytes(16)
-    digest = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode("utf-8"),
-        salt,
-        PASSWORD_HASH_ITERATIONS,
-    ).hex()
-    return f"{PASSWORD_HASH_ALGORITHM}${PASSWORD_HASH_ITERATIONS}${salt.hex()}${digest}"
+    return _ph.hash(password)
 
 
-def verify_password(password: str, password_hash: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
-        algorithm, iterations, salt_hex, expected = password_hash.split("$", 3)
-    except ValueError:
+        return _ph.verify(hashed_password, plain_password)
+    except (VerifyMismatchError, InvalidHashError, Exception):
         return False
 
-    if algorithm != PASSWORD_HASH_ALGORITHM:
-        return False
 
-    actual = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode("utf-8"),
-        bytes.fromhex(salt_hex),
-        int(iterations),
-    ).hex()
-    return hmac.compare_digest(actual, expected)
+def password_needs_rehash(hashed_password: str) -> bool:
+    """True when stored hash uses outdated parameters — rehash on next login."""
+    return _ph.check_needs_rehash(hashed_password)
 
 
 def create_access_token(subject: str, expires_minutes: int | None = None) -> str:
-    expires_at = datetime.now(timezone.utc) + timedelta(
-        minutes=expires_minutes or settings.access_token_expire_minutes
-    )
-    payload: dict[str, Any] = {"sub": subject, "exp": expires_at}
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(minutes=expires_minutes or settings.access_token_expire_minutes)
+    payload: dict[str, Any] = {
+        "sub": subject,
+        "iat": now,
+        "exp": expires_at,
+    }
     return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)
 
 
 def decode_access_token(token: str) -> str | None:
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[JWT_ALGORITHM])
-    except JWTError:
+        payload = jwt.decode(
+            token,
+            settings.secret_key,
+            algorithms=[JWT_ALGORITHM],
+            options={"require": ["sub", "exp", "iat"]},
+        )
+        subject = payload.get("sub")
+        return subject if isinstance(subject, str) else None
+    except jwt.InvalidTokenError:
         return None
-    subject = payload.get("sub")
-    return subject if isinstance(subject, str) else None

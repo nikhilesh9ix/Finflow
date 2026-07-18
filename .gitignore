@@ -1,5 +1,8 @@
+.env
 backend/.env
+finflow-ai/backend/.env
 backend/finflow.db
+finflow-ai/backend/finflow.db
 backend/.pytest_cache/
 **/__pycache__/
 frontend/dist/

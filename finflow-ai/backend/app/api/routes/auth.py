@@ -1,10 +1,17 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.security import create_access_token, get_password_hash, verify_password
+from app.api.deps import get_current_user
+from app.core.limiter import limiter
+from app.core.security import (
+    create_access_token,
+    get_password_hash,
+    password_needs_rehash,
+    verify_password,
+)
 from app.db.session import get_db
 from app.models import InvestmentProfile, User
 from app.schemas import LoginRequest, RegisterRequest, TokenResponse, UserResponse
@@ -12,11 +19,21 @@ from app.schemas import LoginRequest, RegisterRequest, TokenResponse, UserRespon
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: RegisterRequest, db: Annotated[Session, Depends(get_db)]) -> User:
-    existing_user = db.scalar(select(User).where(User.email == str(payload.email)))
-    if existing_user:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email is already registered")
+@router.post(
+    "/register",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new user account",
+)
+@limiter.limit("5/minute")
+def register(
+    request: Request,
+    payload: RegisterRequest,
+    db: Annotated[Session, Depends(get_db)],
+) -> User:
+    existing = db.scalar(select(User).where(User.email == str(payload.email)))
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     user = User(
         email=str(payload.email),
@@ -41,9 +58,38 @@ def register(payload: RegisterRequest, db: Annotated[Session, Depends(get_db)]) 
     return user
 
 
-@router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, db: Annotated[Session, Depends(get_db)]) -> TokenResponse:
+@router.post(
+    "/login",
+    response_model=TokenResponse,
+    summary="Authenticate and receive a JWT access token",
+)
+@limiter.limit("10/minute")
+def login(
+    request: Request,
+    payload: LoginRequest,
+    db: Annotated[Session, Depends(get_db)],
+) -> TokenResponse:
     user = db.scalar(select(User).where(User.email == str(payload.email)))
     if not user or not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+        )
+
+    # Transparently rehash if Argon2 parameters have been tightened since last login.
+    if password_needs_rehash(user.hashed_password):
+        user.hashed_password = get_password_hash(payload.password)
+        db.commit()
+
     return TokenResponse(access_token=create_access_token(user.email))
+
+
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    summary="Return the authenticated user's profile",
+)
+def get_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    return current_user
