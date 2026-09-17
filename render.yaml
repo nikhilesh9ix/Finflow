@@ -1,0 +1,32 @@
+# Render blueprint for the FinFlow AI backend.
+#
+# The database is MongoDB Atlas (Render has no managed MongoDB), and the
+# frontend is deployed separately on Vercel. Values marked `sync: false` are not
+# stored in this file — set them in the Render dashboard. See DEPLOYMENT.md.
+
+services:
+  - type: web
+    name: finflow-api
+    runtime: docker
+    plan: free
+    region: singapore # closest region to India on the free plan
+    branch: main
+    dockerfilePath: ./finflow-ai/backend/Dockerfile
+    dockerContext: ./finflow-ai/backend
+    healthCheckPath: /api/v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: APP_ENV
+        value: production # refuses to start on the default SECRET_KEY
+      - key: SECRET_KEY
+        generateValue: true # Render generates one; tokens survive restarts
+      - key: MONGODB_URL
+        sync: false # mongodb+srv://… from Atlas, with the password
+      - key: MONGODB_DB
+        value: finflow
+      - key: BACKEND_CORS_ORIGINS
+        sync: false # the Vercel URL, e.g. https://finflow.vercel.app
+      - key: GROQ_API_KEY
+        sync: false # optional: without it the copilot uses rule-based answers
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
