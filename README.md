@@ -79,11 +79,12 @@ frontend/
 
 ## CSV Format
 
-Use `sample_transactions.csv` as a template:
+The files in `finflow-ai/data/seed/` are ready-made examples — fifteen personas,
+three months each. Any of them can be uploaded as is:
 
 ```csv
-date,description,merchant,amount,category
-2026-06-21,Coffee meeting,Blue Tokai,-450,Dining
+date,description,merchant,amount,type,category
+2026-06-21,Coffee meeting,Blue Tokai,450,debit,Food
 ```
 
 Required columns are `date`, `description`, and `amount`. Category is optional and will be inferred from keywords when blank.

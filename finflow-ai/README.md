@@ -8,9 +8,7 @@ FinFlow AI is a personal financial operating system MVP. It is designed to help 
 finflow-ai/
   frontend/   React + Vite + Tailwind CSS
   backend/    FastAPI + PyMongo + Pydantic
-  data/       Seed and demo datasets
-  docs/       Product and engineering docs
-  scripts/    Local automation scripts
+  data/seed/  Sample bank statements for import
 ```
 
 ## Quickstart
@@ -40,13 +38,6 @@ Windows service on port 27017), or start just the database with Docker:
 
 ```bash
 docker compose up -d mongo
-```
-
-Moving data from the old SQLite database (one-off, dry run first):
-
-```bash
-python -m app.scripts.migrate_sqlite_to_mongo
-python -m app.scripts.migrate_sqlite_to_mongo --apply
 ```
 
 Default local URLs:
