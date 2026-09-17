@@ -26,7 +26,7 @@ export function RegisterPage() {
   if (token) return <Navigate to="/" replace />;
 
   return (
-    <main className="grid min-h-screen bg-[radial-gradient(ellipse_at_top_right,rgba(13,148,136,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.12),transparent_50%),#020617] text-white lg:grid-cols-[1.05fr_0.95fr]">
+    <main className="grid min-h-screen bg-slate-950 bg-[radial-gradient(ellipse_at_top_right,rgba(13,148,136,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.12),transparent_50%)] text-white lg:grid-cols-[1.05fr_0.95fr]">
       <section className="flex items-center px-8 py-12 sm:px-12 lg:px-20 lg:py-20">
         <div className="max-w-2xl">
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-400/10 px-4.5 py-1.5 text-xs font-bold uppercase tracking-wider text-teal-300">
@@ -36,7 +36,7 @@ export function RegisterPage() {
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl bg-linear-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
             Create account
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-500 dark:text-slate-400 font-medium">
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-300 font-medium">
             Set up your profile, import a bank statement, and every figure in FinFlow is computed
             from your own transactions.
           </p>
@@ -51,7 +51,7 @@ export function RegisterPage() {
                 key={item.title}
               >
                 <p className="text-sm font-bold text-teal-300">{item.title}</p>
-                <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{item.copy}</p>
+                <p className="mt-2 text-xs leading-relaxed text-slate-300">{item.copy}</p>
               </div>
             ))}
           </div>
