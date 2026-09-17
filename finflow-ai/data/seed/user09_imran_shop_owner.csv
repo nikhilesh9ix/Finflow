@@ -1,0 +1,46 @@
+date,description,merchant,amount,type
+2026-06-02,Shop rent,Market association,"21,900",debit
+2026-06-04,Shop cash deposit,Self deposit,"38,100",credit
+2026-06-05,Home groceries,Local kirana,"9,500",debit
+2026-06-06,Working capital loan EMI,Bajaj Finserv,"16,900",debit
+2026-06-08,Stock purchase - wholesale,Wholesale market,"46,000",debit
+2026-06-09,Shop electricity,TNEB,"3,200",debit
+2026-06-10,Recurring deposit,Post Office,"5,000",debit
+2026-06-11,Family dinner,Paradise Biryani,"1,393",debit
+2026-06-14,Delivery van diesel,HP Petrol,"1,906",debit
+2026-06-14,Shop cash deposit,Self deposit,"41,200",credit
+2026-06-17,Shop maintenance,Local vendor,"2,656",debit
+2026-06-18,Family dinner,Paradise Biryani,879,debit
+2026-06-22,Helper wages,Shop helper,"6,467",debit
+2026-06-24,Delivery van diesel,HP Petrol,"3,171",debit
+2026-06-24,UPI settlement,Paytm Business,"52,000",credit
+2026-07-02,Shop rent,Market association,"21,950",debit
+2026-07-03,Family dinner,Paradise Biryani,"1,248",debit
+2026-07-03,Shop maintenance,Local vendor,"2,814",debit
+2026-07-04,Shop cash deposit,Self deposit,"38,200",credit
+2026-07-05,Home groceries,Local kirana,"9,550",debit
+2026-07-06,Delivery van diesel,HP Petrol,"3,405",debit
+2026-07-06,Working capital loan EMI,Bajaj Finserv,"16,700",debit
+2026-07-08,Helper wages,Shop helper,"6,406",debit
+2026-07-08,Stock purchase - wholesale,Wholesale market,"46,100",debit
+2026-07-09,Shop electricity,TNEB,"3,200",debit
+2026-07-09,Shop maintenance,Local vendor,"3,463",debit
+2026-07-10,Recurring deposit,Post Office,"5,000",debit
+2026-07-14,Family dinner,Paradise Biryani,969,debit
+2026-07-14,Helper wages,Shop helper,"6,874",debit
+2026-07-14,Shop cash deposit,Self deposit,"41,200",credit
+2026-07-24,UPI settlement,Paytm Business,"51,800",credit
+2026-08-02,Shop maintenance,Local vendor,"2,159",debit
+2026-08-02,Shop rent,Market association,"22,150",debit
+2026-08-04,Shop cash deposit,Self deposit,"38,000",credit
+2026-08-05,Home groceries,Local kirana,"9,650",debit
+2026-08-06,Helper wages,Shop helper,"7,125",debit
+2026-08-06,Working capital loan EMI,Bajaj Finserv,"16,900",debit
+2026-08-08,Stock purchase - wholesale,Wholesale market,"45,900",debit
+2026-08-09,Shop electricity,TNEB,"3,200",debit
+2026-08-10,Recurring deposit,Post Office,"5,000",debit
+2026-08-14,Shop cash deposit,Self deposit,"41,100",credit
+2026-08-20,Delivery van diesel,HP Petrol,"2,826",debit
+2026-08-22,Helper wages,Shop helper,"6,747",debit
+2026-08-24,UPI settlement,Paytm Business,"51,900",credit
+2026-08-25,Family dinner,Paradise Biryani,"1,398",debit

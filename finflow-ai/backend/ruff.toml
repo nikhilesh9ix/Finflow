@@ -1,0 +1,15 @@
+# Lint rules are pinned here (and the ruff version in CI) so a new ruff release
+# cannot change what CI enforces. Ruff 0.16 widened its default rule set, which
+# turned a passing `ruff check .` into 140 errors with no code change.
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = [
+    "E4", "E7", "E9", "F",  # pyflakes + pycodestyle errors (ruff's classic defaults)
+    "I",                    # import sorting
+    "B",                    # bugbear: likely bugs
+]
+ignore = [
+    "B008",  # FastAPI declares dependencies as File()/Depends() calls in defaults
+]

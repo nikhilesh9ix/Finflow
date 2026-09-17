@@ -1,0 +1,29 @@
+date,description,merchant,amount,type,category
+2026-05-01,Salary credit,Infosys Payroll,125000,credit,Salary/Income
+2026-05-02,House rent,Landlord,32000,debit,Bills
+2026-05-03,Home loan EMI,HDFC Bank,21000,debit,EMI/Loan
+2026-05-04,Electricity bill,BESCOM,2400,debit,Bills
+2026-05-05,School fees,Delhi Public School,8500,debit,Education
+2026-05-06,Broadband,ACT Fibernet,1199,debit,Bills
+2026-05-08,Groceries,BigBasket,7800,debit,Food
+2026-05-10,Mutual fund SIP,Zerodha Coin,18000,debit,Other
+2026-05-12,Fuel,Indian Oil,3200,debit,Transport
+2026-05-15,Health insurance,HDFC Ergo,3400,debit,Healthcare
+2026-05-18,Dining out,Barbeque Nation,2800,debit,Food
+2026-05-22,Swiggy order,Swiggy,1450,debit,Food
+2026-05-25,Netflix subscription,Netflix,649,debit,Entertainment
+2026-05-27,Kids clothing,Myntra,3200,debit,Shopping
+2026-06-01,Salary credit,Infosys Payroll,125000,credit,Salary/Income
+2026-06-02,House rent,Landlord,32000,debit,Bills
+2026-06-03,Home loan EMI,HDFC Bank,21000,debit,EMI/Loan
+2026-06-04,Electricity bill,BESCOM,2900,debit,Bills
+2026-06-05,School fees,Delhi Public School,8500,debit,Education
+2026-06-06,Broadband,ACT Fibernet,1199,debit,Bills
+2026-06-09,Groceries,BigBasket,8200,debit,Food
+2026-06-10,Mutual fund SIP,Zerodha Coin,18000,debit,Other
+2026-06-12,Fuel,Indian Oil,3600,debit,Transport
+2026-06-15,Health insurance,HDFC Ergo,3400,debit,Healthcare
+2026-06-19,Dining out,Toit Brewpub,3100,debit,Food
+2026-06-23,Swiggy order,Swiggy,1680,debit,Food
+2026-06-25,Netflix subscription,Netflix,649,debit,Entertainment
+2026-06-28,Doctor consultation,Apollo Clinic,900,debit,Healthcare

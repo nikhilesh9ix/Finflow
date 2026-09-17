@@ -3,10 +3,10 @@ import { ChevronLeft, ChevronRight, Upload } from "lucide-react";
 import { type ChangeEvent, useState } from "react";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/StatePanel";
 import { useToast } from "../components/ToastProvider";
-import { apiFetch } from "../lib/api";
-import { demoTransactions, fallbackNotice } from "../lib/demoData";
+import { apiFetch, isAuthError, isBackendUnreachable } from "../lib/api";
 import { formatCurrency } from "../lib/format";
 import { useTransactions } from "../lib/queries";
+import { useAuthStore } from "../store/auth";
 import type { Transaction } from "../types";
 
 const PAGE_SIZE = 50;
@@ -36,7 +36,7 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
   const formatted = formatCurrency(Math.abs(Number(transaction.amount)));
   return (
     <tr>
-      <td className="text-xs font-semibold text-slate-400 dark:text-slate-500 tabular-nums">
+      <td className="text-xs font-semibold whitespace-nowrap text-slate-500 dark:text-slate-400 tabular-nums">
         {transaction.transaction_date}
       </td>
       <td className="font-bold text-slate-800 dark:text-slate-100">{transaction.description}</td>
@@ -44,12 +44,12 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
       <td>
         <CategoryBadge category={transaction.category} />
       </td>
-      <td className="text-sm text-slate-500">{transaction.source}</td>
+      <td className="text-sm text-slate-500 dark:text-slate-400">{transaction.source}</td>
       <td
         className={`text-right font-bold tracking-tight tabular-nums ${
           isNegative
-            ? "text-rose-600 dark:text-rose-400"
-            : "text-emerald-600 dark:text-emerald-400"
+            ? "text-rose-700 dark:text-rose-400"
+            : "text-emerald-700 dark:text-emerald-400"
         }`}
       >
         {isNegative ? `-${formatted}` : `+${formatted}`}
@@ -61,17 +61,15 @@ function TransactionRow({ transaction }: { transaction: Transaction }) {
 export function TransactionsPage() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const loadMe = useAuthStore((state) => state.loadMe);
 
   const [page, setPage] = useState(0);
-  const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadMessage, setUploadMessage] = useState<{ kind: "success" | "error"; text: string; details: string[] } | null>(null);
 
   const offset = page * PAGE_SIZE;
   const { data, isLoading, isError, error } = useTransactions(PAGE_SIZE, offset);
 
-  // Fallback to demo data when API unavailable
-  const transactions: Transaction[] = isError
-    ? demoTransactions
-    : (data?.items ?? []);
+  const transactions: Transaction[] = data?.items ?? [];
   const total = data?.total ?? transactions.length;
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -81,18 +79,37 @@ export function TransactionsPage() {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      setUploadMessage("");
-      const result = await apiFetch<{ imported: number; skipped: number }>(
+      setUploadMessage(null);
+      const result = await apiFetch<{ imported: number; skipped: number; errors: { row: number; error: string }[] }>(
         "/transactions/upload",
         { method: "POST", body: formData },
       );
-      const msg = `${result.imported} transactions imported${result.skipped > 0 ? `, ${result.skipped} skipped` : ""}`;
-      setUploadMessage(msg);
+      // The API answers 200 even when nothing could be read (e.g. missing columns),
+      // so an upload that imported nothing was reported as a success.
+      const details = (result.errors ?? []).slice(0, 5).map((e) => (e.row ? `Row ${e.row}: ${e.error}` : e.error));
+      if (result.imported === 0 && result.skipped > 0) {
+        setUploadMessage({ kind: "error", text: `Nothing imported — ${result.skipped} row${result.skipped === 1 ? "" : "s"} could not be used.`, details });
+        showToast("No transactions were imported", "error");
+        return;
+      }
+      setUploadMessage({
+        kind: "success",
+        text: `${result.imported} transactions imported${result.skipped > 0 ? `, ${result.skipped} skipped` : ""}`,
+        details,
+      });
       showToast(`Imported ${result.imported} transactions`, "success");
-      // Invalidate all transaction + dashboard caches so they refetch fresh data.
-      await queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      await queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      // An import can change monthly income (derived from salary credits), which
+      // feeds the salary plan, budgets, and emergency-fund target — refresh all of
+      // them, plus the signed-in user so Settings shows the new income.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+        queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["analytics"] }),
+        queryClient.invalidateQueries({ queryKey: ["budgets"] }),
+        queryClient.invalidateQueries({ queryKey: ["salary-plan"] }),
+        queryClient.invalidateQueries({ queryKey: ["investment-profile"] }),
+        loadMe(),
+      ]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unable to import CSV";
       showToast(msg, "error");
@@ -102,7 +119,6 @@ export function TransactionsPage() {
   };
 
   if (isLoading && !data) return <LoadingSkeleton variant="table" />;
-  if (isError) showToast(fallbackNotice, "info");
 
   return (
     <div className="space-y-6 lg:space-y-8">
@@ -110,7 +126,7 @@ export function TransactionsPage() {
         <div>
           <p className="section-kicker">Money movement</p>
           <h2 className="section-title">Transactions</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-350 font-medium">
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300 font-medium">
             Review every movement with a clean ledger view. Import from any bank CSV.
           </p>
         </div>
@@ -121,10 +137,21 @@ export function TransactionsPage() {
         </label>
       </section>
 
-      {uploadMessage && <p className="alert-success">{uploadMessage}</p>}
-      {isError && (
+      {uploadMessage && (
+        <div className={uploadMessage.kind === "error" ? "alert-error" : "alert-success"} role="status">
+          <p className="font-semibold">{uploadMessage.text}</p>
+          {uploadMessage.details.length > 0 && (
+            <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs">
+              {uploadMessage.details.map((detail) => (
+                <li key={detail}>{detail}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {isError && !isAuthError(error) && (
         <ErrorState
-          title="Live transactions unavailable"
+          title={isBackendUnreachable(error) ? "Live transactions unavailable" : "Could not load transactions"}
           body={error instanceof Error ? error.message : "API error"}
         />
       )}

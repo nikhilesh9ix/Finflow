@@ -5,17 +5,19 @@ FinFlow AI is a production-quality MVP for a personal AI CFO. It helps users man
 ## Stack
 
 - Frontend: React, Vite, Tailwind CSS, Zustand, React Hook Form, Zod, Recharts
-- Backend: FastAPI, SQLAlchemy, Pydantic, JWT auth
-- Database: SQLite by default for instant local demo, PostgreSQL via `DATABASE_URL`
+- Backend: FastAPI, PyMongo, Pydantic, JWT auth
+- Database: MongoDB (local Community Server, or MongoDB Atlas via `MONGODB_URL`)
 - File parsing: CSV upload
 - AI layer: deterministic copilot now, OpenAI/Gemini keys supported by environment for future extension
 
 ## Quick Start
 
+Prerequisite: MongoDB running on `mongodb://localhost:27017` (MongoDB Community Server, or `docker compose up -d mongo`).
+
 Backend:
 
 ```bash
-cd backend
+cd finflow-ai/backend
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
@@ -31,22 +33,19 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`.
-
-Demo login:
-
-- Email: `demo@finflow.ai`
-- Password: `demo12345`
+Open `http://localhost:5173`, create an account, then import a CSV from
+`finflow-ai/data/seed/` on the Transactions page. Monthly income is worked out
+from the salary credits in the statement.
 
 ## Architecture
 
 ```text
-backend/
+finflow-ai/backend/
   app/
     api/routes/        FastAPI route modules
     core/              settings and security
-    db/                SQLAlchemy engine/session
-    models/            database models
+    db/                MongoDB client, Decimal128 codec, indexes
+    models/            typed document models
     schemas/           Pydantic request/response schemas
     seed/              demo data
     services/          finance, categorization, copilot logic
@@ -89,15 +88,20 @@ date,description,merchant,amount,category
 
 Required columns are `date`, `description`, and `amount`. Category is optional and will be inferred from keywords when blank.
 
-## PostgreSQL
+## MongoDB
 
-Set this in `backend/.env`:
+Set these in `finflow-ai/backend/.env`:
 
 ```env
-DATABASE_URL=postgresql+psycopg://user:password@localhost:5432/finflow
+MONGODB_URL=mongodb://localhost:27017
+MONGODB_DB=finflow
 ```
 
-The app creates tables and seeds demo data on startup for the MVP.
+For MongoDB Atlas, use its `mongodb+srv://...` connection string as `MONGODB_URL`.
+Indexes are created automatically on startup; there are no migrations to run.
+
+To browse the data, open [MongoDB Compass](https://www.mongodb.com/products/tools/compass)
+and connect to the same URL.
 
 ## Screenshots
 
@@ -115,7 +119,7 @@ Add screenshots here after running locally:
 Run backend smoke checks:
 
 ```bash
-cd backend
+cd finflow-ai/backend
 pytest
 ```
 

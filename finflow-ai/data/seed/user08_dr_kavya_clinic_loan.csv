@@ -1,0 +1,43 @@
+date,description,merchant,amount,type,category
+01/06/2026,Hospital consultancy fee,Aster Hospital,"₹1,45,200",credit,Salary/Income
+03/06/2026,Clinic premises rent,Property owner,"₹35,000",debit,Bills
+05/06/2026,Clinic equipment loan EMI,HDFC Bank,"₹24,400",debit,EMI/Loan
+05/06/2026,Staff salary - receptionist,Clinic staff,"₹17,900",debit,Bills
+06/06/2026,Household groceries,Big Basket,"₹14,450",debit,Food
+07/06/2026,Mutual fund SIP,Zerodha Coin,"₹24,900",debit,Investments
+09/06/2026,Dining out,Barbeque Nation,"₹2,123",debit,Food
+10/06/2026,Term insurance premium,HDFC Life,"₹3,400",debit,Bills
+14/06/2026,Car fuel,Shell,"₹6,500",debit,Transport
+15/06/2026,Driver salary,Driver,"₹9,057",debit,Transport
+20/06/2026,Clinic collections,Own clinic,"₹62,200",credit,Salary/Income
+22/06/2026,Medical supplies,Medplus Wholesale,"₹13,557",debit,Healthcare
+24/06/2026,Conference registration,IMA,"₹6,566",debit,Education
+01/07/2026,Hospital consultancy fee,Aster Hospital,"₹1,45,200",credit,Salary/Income
+03/07/2026,Clinic premises rent,Property owner,"₹35,100",debit,Bills
+04/07/2026,Medical supplies,Medplus Wholesale,"₹12,593",debit,Healthcare
+05/07/2026,Clinic equipment loan EMI,HDFC Bank,"₹24,400",debit,EMI/Loan
+05/07/2026,Staff salary - receptionist,Clinic staff,"₹18,150",debit,Bills
+06/07/2026,Household groceries,Big Basket,"₹14,400",debit,Food
+07/07/2026,Mutual fund SIP,Zerodha Coin,"₹25,050",debit,Investments
+10/07/2026,Term insurance premium,HDFC Life,"₹3,400",debit,Bills
+14/07/2026,Car fuel,Shell,"₹6,450",debit,Transport
+15/07/2026,Dining out,Barbeque Nation,"₹4,143",debit,Food
+20/07/2026,Clinic collections,Own clinic,"₹62,200",credit,Salary/Income
+21/07/2026,Conference registration,IMA,"₹5,370",debit,Education
+22/07/2026,Driver salary,Driver,"₹9,141",debit,Transport
+24/07/2026,Conference registration,IMA,"₹3,587",debit,Education
+26/07/2026,Medical supplies,Medplus Wholesale,"₹8,602",debit,Healthcare
+01/08/2026,Hospital consultancy fee,Aster Hospital,"₹1,45,100",credit,Salary/Income
+03/08/2026,Clinic premises rent,Property owner,"₹35,150",debit,Bills
+04/08/2026,Dining out,Barbeque Nation,"₹2,949",debit,Food
+04/08/2026,Medical supplies,Medplus Wholesale,"₹12,630",debit,Healthcare
+05/08/2026,Clinic equipment loan EMI,HDFC Bank,"₹24,550",debit,EMI/Loan
+05/08/2026,Staff salary - receptionist,Clinic staff,"₹17,900",debit,Bills
+06/08/2026,Household groceries,Big Basket,"₹14,500",debit,Food
+07/08/2026,Mutual fund SIP,Zerodha Coin,"₹25,050",debit,Investments
+10/08/2026,Term insurance premium,HDFC Life,"₹3,400",debit,Bills
+14/08/2026,Car fuel,Shell,"₹6,350",debit,Transport
+17/08/2026,Driver salary,Driver,"₹9,097",debit,Transport
+20/08/2026,Clinic collections,Own clinic,"₹62,000",credit,Salary/Income
+27/08/2026,Conference registration,IMA,"₹3,348",debit,Education
+27/08/2026,Medical supplies,Medplus Wholesale,"₹12,995",debit,Healthcare

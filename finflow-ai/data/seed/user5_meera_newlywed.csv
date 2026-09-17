@@ -1,0 +1,28 @@
+date,description,merchant,amount,type,category
+2026-05-01,Salary credit,Wipro Payroll,85000,credit,Salary/Income
+2026-05-02,Flat rent,Landlord,24000,debit,Bills
+2026-05-03,Car loan EMI,Axis Bank,14200,debit,EMI/Loan
+2026-05-04,Electricity and water,BESCOM,1900,debit,Bills
+2026-05-05,Broadband,Airtel Fiber,999,debit,Bills
+2026-05-07,Groceries,DMart,6400,debit,Food
+2026-05-09,Fuel,HP Petrol,2800,debit,Transport
+2026-05-12,SIP - index fund,Groww,12000,debit,Other
+2026-05-15,Term insurance,LIC,2100,debit,Healthcare
+2026-05-18,Dining out,Truffles,1900,debit,Food
+2026-05-21,Home furnishing,IKEA,8600,debit,Shopping
+2026-05-24,Movie and dinner,PVR Cinemas,2400,debit,Entertainment
+2026-05-27,Emergency fund transfer,ICICI Savings,8000,debit,Other
+2026-05-30,Prime subscription,Amazon Prime,299,debit,Entertainment
+2026-06-01,Salary credit,Wipro Payroll,85000,credit,Salary/Income
+2026-06-02,Flat rent,Landlord,24000,debit,Bills
+2026-06-03,Car loan EMI,Axis Bank,14200,debit,EMI/Loan
+2026-06-04,Electricity and water,BESCOM,2200,debit,Bills
+2026-06-05,Broadband,Airtel Fiber,999,debit,Bills
+2026-06-08,Groceries,DMart,6900,debit,Food
+2026-06-10,Fuel,HP Petrol,3100,debit,Transport
+2026-06-12,SIP - index fund,Groww,12000,debit,Other
+2026-06-15,Term insurance,LIC,2100,debit,Healthcare
+2026-06-17,Anniversary dinner,The Fatty Bao,4800,debit,Food
+2026-06-20,Weekend trip,Airbnb,11500,debit,Entertainment
+2026-06-25,Emergency fund transfer,ICICI Savings,8000,debit,Other
+2026-06-30,Prime subscription,Amazon Prime,299,debit,Entertainment

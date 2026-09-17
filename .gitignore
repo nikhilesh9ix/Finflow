@@ -13,3 +13,9 @@ backend/.venv/
 .mypy_cache/
 .pytest_cache/
 .claude/
+
+# Deck build tooling and QA output
+node_modules/
+qa_slides/
+patch_deck.py
+*.bundle

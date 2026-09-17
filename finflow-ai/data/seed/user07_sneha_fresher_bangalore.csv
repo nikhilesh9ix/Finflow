@@ -1,0 +1,50 @@
+date,description,merchant,amount,type
+2026-06-02,Metro recharge,BMRCL,552,debit
+2026-06-02,Online shopping,Myntra,1013,debit
+2026-06-02,PG accommodation,Zolo Stays,14650,debit
+2026-06-04,Swiggy order,Swiggy,464,debit
+2026-06-05,Index fund SIP,Groww,3000,debit
+2026-06-07,Gym membership,Cult Fit,1499,debit
+2026-06-08,Broadband,ACT Fibernet,799,debit
+2026-06-11,Netflix subscription,Netflix,499,debit
+2026-06-12,Spotify subscription,Spotify,119,debit
+2026-06-15,Zomato order,Zomato,589,debit
+2026-06-18,Weekend movie,PVR,675,debit
+2026-06-20,Uber ride,Uber,295,debit
+2026-06-26,Uber ride,Uber,191,debit
+2026-06-27,Zomato order,Zomato,302,debit
+2026-06-30,Monthly salary,Infosys,45800,credit
+2026-07-02,PG accommodation,Zolo Stays,14600,debit
+2026-07-03,Metro recharge,BMRCL,376,debit
+2026-07-04,Uber ride,Uber,246,debit
+2026-07-04,Zomato order,Zomato,498,debit
+2026-07-05,Index fund SIP,Groww,3000,debit
+2026-07-05,Metro recharge,BMRCL,408,debit
+2026-07-05,Swiggy order,Swiggy,621,debit
+2026-07-07,Gym membership,Cult Fit,1499,debit
+2026-07-08,Broadband,ACT Fibernet,799,debit
+2026-07-08,Online shopping,Myntra,1164,debit
+2026-07-11,Netflix subscription,Netflix,499,debit
+2026-07-12,Spotify subscription,Spotify,119,debit
+2026-07-13,Uber ride,Uber,175,debit
+2026-07-15,Weekend movie,PVR,596,debit
+2026-07-15,Zomato order,Zomato,523,debit
+2026-07-19,Online shopping,Myntra,2417,debit
+2026-07-30,Monthly salary,Infosys,46100,credit
+2026-08-02,PG accommodation,Zolo Stays,14550,debit
+2026-08-02,Weekend movie,PVR,673,debit
+2026-08-03,Online shopping,Myntra,1126,debit
+2026-08-03,Swiggy order,Swiggy,369,debit
+2026-08-03,Uber ride,Uber,135,debit
+2026-08-05,Index fund SIP,Groww,3000,debit
+2026-08-05,Zomato order,Zomato,572,debit
+2026-08-06,Online shopping,Myntra,1096,debit
+2026-08-07,Gym membership,Cult Fit,1499,debit
+2026-08-07,Zomato order,Zomato,646,debit
+2026-08-08,Broadband,ACT Fibernet,799,debit
+2026-08-11,Netflix subscription,Netflix,499,debit
+2026-08-12,Spotify subscription,Spotify,119,debit
+2026-08-18,Metro recharge,BMRCL,484,debit
+2026-08-18,Uber ride,Uber,201,debit
+2026-08-23,Weekend movie,PVR,685,debit
+2026-08-30,Monthly salary,Infosys,45900,credit

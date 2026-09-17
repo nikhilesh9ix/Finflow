@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import { EmptyState, ErrorState, LoadingSkeleton } from "../components/StatePanel";
+import { isAuthError, isBackendUnreachable } from "../lib/api";
 import { formatCurrency, formatPercent } from "../lib/format";
 import { useSalaryPlan } from "../lib/queries";
 import { useAuthStore } from "../store/auth";
@@ -23,9 +25,9 @@ export function SalaryPage() {
 
   return (
     <div className="space-y-6">
-      {isError && (
+      {isError && !isAuthError(error) && (
         <ErrorState
-          title="Salary plan unavailable"
+          title={isBackendUnreachable(error) ? "Salary plan unavailable" : "Could not load salary plan"}
           body={error instanceof Error ? error.message : "Backend unavailable"}
         />
       )}
@@ -39,46 +41,59 @@ export function SalaryPage() {
         </p>
       </section>
 
-      {!plan || allocations.length === 0 ? (
+      {!plan || allocations.length === 0 || income === 0 ? (
         <EmptyState
-          title="No salary plan yet"
-          body="Set your monthly income in Settings and add any debt accounts to generate a plan."
+          title="Import a statement to build a plan"
+          body="Your salary split is computed from monthly income, debt EMIs, and investment capacity. Income comes from the salary credits in your bank statement — import one, then add any loans on the Debts page."
+          action={
+            <div className="flex flex-wrap gap-3">
+              <Link className="primary-button" to="/transactions">Import statement</Link>
+              <Link className="secondary-button" to="/debts">Add debts</Link>
+            </div>
+          }
         />
       ) : (
         <>
+          {plan.shortfall > 0 && (
+            <div className="alert-error">
+              Your EMIs are {formatCurrency(plan.shortfall)} more than your monthly income. Every other
+              bucket is ₹0 until debt payments fall — consider restructuring the highest-rate loan.
+            </div>
+          )}
+
           {/* Ratio stats */}
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="stat-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Monthly income
               </p>
               <p className="mt-3 text-3xl font-extrabold tabular-nums">{formatCurrency(income)}</p>
             </div>
             <div className="stat-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Debt pressure
               </p>
               <p
                 className={`mt-3 text-3xl font-extrabold tabular-nums ${
                   debtToIncomeRatio > 40
-                    ? "text-rose-600 dark:text-rose-400"
+                    ? "text-rose-700 dark:text-rose-400"
                     : "text-slate-900 dark:text-white"
                 }`}
               >
                 {formatPercent(debtToIncomeRatio)}
               </p>
-              <p className="mt-1 text-xs text-slate-400">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {debtToIncomeRatio > 40 ? "High — reduce new debt" : "Within safe range"}
               </p>
             </div>
             <div className="stat-card">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Fixed share
               </p>
               <p className="mt-3 text-3xl font-extrabold tabular-nums">
                 {formatPercent(fixedShare)}
               </p>
-              <p className="mt-1 text-xs text-slate-400">Essentials + EMIs</p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Essentials + EMIs</p>
             </div>
           </div>
 
@@ -151,9 +166,8 @@ export function SalaryPage() {
           <section className="panel">
             <h3 className="panel-title mb-3">Formula</h3>
             <div className="grid gap-2 text-sm text-slate-600 dark:text-slate-300">
-              <p>Essentials cap: 50% of income · Debt EMIs: pulled from your debt accounts</p>
-              <p>Emergency fund: 15% cap until target reached · Investments: from investment profile</p>
-              <p>Flexible: income − essentials − debt − emergency − investments</p>
+              <p>Filled in order from what remains: Debt EMIs → Essentials (up to 50% of income) → Emergency fund (up to 15%) → Investments → Flexible</p>
+              <p>Buckets always add up to your income, so the plan never spends money you do not have</p>
               <p className="rounded-xl border border-amber-200 bg-amber-50/70 mt-2 px-4 py-3 text-xs text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 font-medium">
                 Rule-of-thumb guidance only. Tax treatment, existing SIPs, and income
                 irregularity may change the ideal split. Consult a certified financial planner.

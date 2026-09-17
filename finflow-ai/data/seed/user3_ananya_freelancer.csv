@@ -1,0 +1,27 @@
+date,description,merchant,amount,type,category
+2026-05-03,Client project payment,Upwork,68000,credit,Salary/Income
+2026-05-09,Retainer - brand design,Zoho Corp,35000,credit,Salary/Income
+2026-05-02,Studio rent,Workafella,14000,debit,Bills
+2026-05-04,Adobe Creative Cloud,Adobe,4230,debit,Bills
+2026-05-05,Figma subscription,Figma,1250,debit,Bills
+2026-05-06,Internet,Airtel Fiber,1099,debit,Bills
+2026-05-08,Groceries,Zepto,5400,debit,Food
+2026-05-11,Cafe working session,Third Wave Coffee,1850,debit,Food
+2026-05-14,Cab rides,Uber,2300,debit,Transport
+2026-05-16,ELSS investment,Groww,20000,debit,Other
+2026-05-20,Liquid fund parking,Groww,25000,debit,Other
+2026-05-24,Health insurance,Star Health,2800,debit,Healthcare
+2026-05-29,Spotify subscription,Spotify,119,debit,Entertainment
+2026-06-04,Client project payment,Upwork,52000,credit,Salary/Income
+2026-06-09,Retainer - brand design,Zoho Corp,35000,credit,Salary/Income
+2026-06-02,Studio rent,Workafella,14000,debit,Bills
+2026-06-04,Adobe Creative Cloud,Adobe,4230,debit,Bills
+2026-06-05,Figma subscription,Figma,1250,debit,Bills
+2026-06-06,Internet,Airtel Fiber,1099,debit,Bills
+2026-06-10,Groceries,Zepto,4900,debit,Food
+2026-06-13,Cafe working session,Third Wave Coffee,2100,debit,Food
+2026-06-15,Cab rides,Uber,1950,debit,Transport
+2026-06-16,ELSS investment,Groww,20000,debit,Other
+2026-06-21,New tablet,Apple Store,68900,debit,Shopping
+2026-06-24,Health insurance,Star Health,2800,debit,Healthcare
+2026-06-29,Spotify subscription,Spotify,119,debit,Entertainment

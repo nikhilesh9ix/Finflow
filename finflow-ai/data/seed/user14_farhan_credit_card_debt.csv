@@ -1,0 +1,47 @@
+date,description,merchant,amount,type,category
+01/06/2026,Salary credit,Accenture,"1,65,200",credit,Salary/Income
+02/06/2026,Apartment rent,Landlord,"42,000",debit,Bills
+04/06/2026,Groceries,Big Basket,"13,350",debit,Food
+05/06/2026,Car loan EMI,ICICI Bank,"28,450",debit,EMI/Loan
+06/06/2026,Credit card minimum due,HDFC Credit Card,"17,850",debit,EMI/Loan
+07/06/2026,Credit card minimum due,Axis Credit Card,"12,600",debit,EMI/Loan
+08/06/2026,Bar tab,Toit,"2,673",debit,Entertainment
+08/06/2026,Personal loan EMI,Tata Capital,"16,350",debit,EMI/Loan
+10/06/2026,Cab rides,Uber,"1,410",debit,Transport
+10/06/2026,Streaming bundle,Netflix,799,debit,Entertainment
+17/06/2026,Cab rides,Uber,"1,101",debit,Transport
+19/06/2026,Electronics purchase,Amazon,"29,918",debit,Shopping
+20/06/2026,Weekend getaway hotel,MakeMyTrip,"11,648",debit,Entertainment
+23/06/2026,Restaurant bill,Social,"2,960",debit,Food
+01/07/2026,Salary credit,Accenture,"1,64,800",credit,Salary/Income
+02/07/2026,Apartment rent,Landlord,"41,900",debit,Bills
+04/07/2026,Groceries,Big Basket,"13,350",debit,Food
+05/07/2026,Car loan EMI,ICICI Bank,"28,500",debit,EMI/Loan
+06/07/2026,Credit card minimum due,HDFC Credit Card,"17,950",debit,EMI/Loan
+07/07/2026,Credit card minimum due,Axis Credit Card,"12,350",debit,EMI/Loan
+08/07/2026,Personal loan EMI,Tata Capital,"16,350",debit,EMI/Loan
+09/07/2026,Weekend getaway hotel,MakeMyTrip,"20,484",debit,Entertainment
+09/07/2026,Weekend getaway hotel,MakeMyTrip,"21,225",debit,Entertainment
+10/07/2026,Streaming bundle,Netflix,799,debit,Entertainment
+11/07/2026,Cab rides,Uber,"1,897",debit,Transport
+13/07/2026,Bar tab,Toit,"5,247",debit,Entertainment
+16/07/2026,Electronics purchase,Amazon,"27,665",debit,Shopping
+26/07/2026,Bar tab,Toit,"6,119",debit,Entertainment
+26/07/2026,Cab rides,Uber,"1,021",debit,Transport
+27/07/2026,Restaurant bill,Social,"3,634",debit,Food
+01/08/2026,Salary credit,Accenture,"1,65,000",credit,Salary/Income
+02/08/2026,Apartment rent,Landlord,"42,100",debit,Bills
+03/08/2026,Electronics purchase,Amazon,"11,174",debit,Shopping
+03/08/2026,Restaurant bill,Social,"6,236",debit,Food
+04/08/2026,Groceries,Big Basket,"13,550",debit,Food
+05/08/2026,Car loan EMI,ICICI Bank,"28,500",debit,EMI/Loan
+06/08/2026,Credit card minimum due,HDFC Credit Card,"18,100",debit,EMI/Loan
+07/08/2026,Credit card minimum due,Axis Credit Card,"12,650",debit,EMI/Loan
+08/08/2026,Personal loan EMI,Tata Capital,"16,150",debit,EMI/Loan
+10/08/2026,Streaming bundle,Netflix,799,debit,Entertainment
+15/08/2026,Restaurant bill,Social,"4,729",debit,Food
+16/08/2026,Cab rides,Uber,"2,488",debit,Transport
+17/08/2026,Cab rides,Uber,"2,395",debit,Transport
+17/08/2026,Electronics purchase,Amazon,"13,091",debit,Shopping
+17/08/2026,Weekend getaway hotel,MakeMyTrip,"8,354",debit,Entertainment
+19/08/2026,Bar tab,Toit,"6,813",debit,Entertainment

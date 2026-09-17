@@ -15,6 +15,18 @@ jobs:
       run:
         working-directory: finflow-ai/backend
 
+    # Tests run against a real MongoDB: the analytics are aggregation pipelines.
+    services:
+      mongo:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,22 +41,16 @@ jobs:
 
       - name: Lint (ruff)
         run: |
-          pip install ruff
+          pip install ruff==0.16.7
           ruff check .
-
-      - name: Run migrations (SQLite smoke test)
-        env:
-          DATABASE_URL: sqlite:///./test.db
-          APP_ENV: local
-          SECRET_KEY: test-secret-key-for-ci-only
-        run: alembic upgrade head
 
       - name: Run tests
         env:
-          DATABASE_URL: sqlite:///./test.db
+          MONGODB_URL: mongodb://localhost:27017
           APP_ENV: local
           SECRET_KEY: test-secret-key-for-ci-only
           ANTHROPIC_API_KEY: ""
+          GROQ_API_KEY: ""
         run: pytest --tb=short -q
 
   # ── Frontend: type-check + build ─────────────────────────────────────────────

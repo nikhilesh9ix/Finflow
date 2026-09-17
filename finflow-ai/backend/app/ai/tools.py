@@ -10,14 +10,17 @@ and one branch in execute_tool().
 """
 
 import json
+import re
 from datetime import date
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 
 from app.models import User
 from app.services import analytics
+
+_MONTH_KEY = re.compile(r"\d{4}-(0[1-9]|1[0-2])")
 
 # ── JSON serialization ────────────────────────────────────────────────────────
 
@@ -35,7 +38,8 @@ def _dump(data: Any) -> str:
     return json.dumps(data, cls=_FinanceEncoder, ensure_ascii=False)
 
 
-# ── Tool schemas (Anthropic tool_use format) ──────────────────────────────────
+# ── Tool schemas (Anthropic tool_use format — see OPENAI_TOOL_DEFINITIONS below
+#    for the Groq/OpenAI translation of the same list) ─────────────────────────
 
 TOOL_DEFINITIONS: list[dict] = [
     {
@@ -142,14 +146,19 @@ TOOL_DEFINITIONS: list[dict] = [
 # ── Tool executor ─────────────────────────────────────────────────────────────
 
 
-def execute_tool(name: str, tool_input: dict, db: Session, user: User) -> str:
+def execute_tool(name: str, tool_input: dict, db: Database, user: User) -> str:
     """
     Dispatch a tool call by name, run the analytics query, return JSON string.
+    Shared by both providers — only the schema wire format differs, not the executor.
 
     Returns a JSON error string on unknown tool names so the model can self-correct
     rather than raising an exception that kills the agentic loop.
     """
     month: str | None = tool_input.get("month")
+    # Month is model-supplied and feeds a date-range filter, so reject anything
+    # that is not YYYY-MM with an error the model can read and correct.
+    if month is not None and not _MONTH_KEY.fullmatch(str(month)):
+        return json.dumps({"error": f"Invalid month {month!r}: use YYYY-MM, or omit it for the latest month."})
 
     match name:
         case "get_dashboard_summary":
@@ -174,3 +183,41 @@ def execute_tool(name: str, tool_input: dict, db: Session, user: User) -> str:
             return _dump(analytics.investment_profile_summary(db, user))
         case _:
             return json.dumps({"error": f"Unknown tool: {name}"})
+
+
+# ── Groq / OpenAI function-calling schema ─────────────────────────────────────
+# Groq speaks the OpenAI wire format, which nests the schema under "function"
+# and calls the JSON Schema "parameters" instead of "input_schema".
+# Derived from TOOL_DEFINITIONS so the two lists can never drift apart.
+
+
+def _nullable_optionals(schema: dict) -> dict:
+    """
+    Widen every optional property to accept null.
+
+    Groq validates tool arguments against the schema strictly and rejects the
+    call outright when a model fills an omittable field with an explicit null —
+    which these models routinely do for "month". Accepting null keeps the
+    agentic loop alive; execute_tool already treats null and absent the same.
+    """
+    required = set(schema.get("required", []))
+    properties = {}
+    for name, prop in schema.get("properties", {}).items():
+        prop_type = prop.get("type")
+        if name not in required and isinstance(prop_type, str):
+            prop = {**prop, "type": [prop_type, "null"]}
+        properties[name] = prop
+    return {**schema, "properties": properties}
+
+
+OPENAI_TOOL_DEFINITIONS: list[dict] = [
+    {
+        "type": "function",
+        "function": {
+            "name": tool["name"],
+            "description": tool["description"],
+            "parameters": _nullable_optionals(tool["input_schema"]),
+        },
+    }
+    for tool in TOOL_DEFINITIONS
+]

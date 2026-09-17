@@ -8,42 +8,66 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ErrorState, LoadingSkeleton } from "../components/StatePanel";
-import { useToast } from "../components/ToastProvider";
-import { demoDashboardSummary, fallbackNotice } from "../lib/demoData";
-import { formatCurrency, formatPercent } from "../lib/format";
+import { Link } from "react-router-dom";
+import { EmptyState, ErrorState, LoadingSkeleton } from "../components/StatePanel";
+import { isAuthError, isBackendUnreachable } from "../lib/api";
+import { formatCurrency, formatMonth, formatPercent } from "../lib/format";
 import { useDashboardSummary } from "../lib/queries";
 import type { DashboardSummary } from "../types";
 
+const EMPTY_SUMMARY: DashboardSummary = {
+  month: "",
+  income_is_estimated: false,
+  monthly_income: 0,
+  actual_income: 0,
+  monthly_spend: 0,
+  invested: 0,
+  projected_savings: 0,
+  savings_rate: 0,
+  category_spend: [],
+  budget_health: [],
+  recent_transactions: [],
+};
+
 export function DashboardPage() {
-  const { showToast } = useToast();
   const { data, isLoading, isError, error } = useDashboardSummary();
 
   if (isLoading && !data) return <LoadingSkeleton />;
-  if (isError) showToast(fallbackNotice, "info");
 
-  const summary: DashboardSummary = data ?? demoDashboardSummary;
+  // Real zeros until the API answers — never invented numbers.
+  const summary: DashboardSummary = data ?? EMPTY_SUMMARY;
+
+  // Statements are imported after the fact, so the figures are for the latest
+  // month in the data — label them with that month, not "this month".
+  const monthLabel = summary.month ? formatMonth(summary.month) : "this month";
 
   const statCards = [
     {
       label: "Monthly income",
       value: formatCurrency(summary.monthly_income),
+      // Income is a 3-month average; call out a month that differs from it.
       subLabel: summary.actual_income !== summary.monthly_income
-        ? `${formatCurrency(summary.actual_income)} received`
+        ? `${formatCurrency(summary.actual_income)} received in ${monthLabel}`
         : undefined,
       icon: Wallet,
       colorClass:
-        "text-emerald-600 bg-emerald-50/80 dark:text-emerald-400 dark:bg-emerald-950/30",
+        "text-emerald-700 bg-emerald-50/80 dark:text-emerald-400 dark:bg-emerald-950/30",
     },
     {
-      label: "Spend this month",
+      label: `Spend · ${monthLabel}`,
       value: formatCurrency(summary.monthly_spend),
+      subLabel: summary.invested > 0 ? "Excludes investments" : undefined,
       icon: TrendingDown,
-      colorClass: "text-rose-600 bg-rose-50/80 dark:text-rose-400 dark:bg-rose-950/30",
+      colorClass: "text-rose-700 bg-rose-50/80 dark:text-rose-400 dark:bg-rose-950/30",
     },
     {
       label: "Projected savings",
       value: formatCurrency(summary.projected_savings),
+      subLabel: summary.income_is_estimated
+        ? "No salary credited yet — based on your average income"
+        : summary.invested > 0
+          ? `${formatCurrency(summary.invested)} invested`
+          : undefined,
       icon: PiggyBank,
       colorClass: "text-cyan-600 bg-cyan-50/80 dark:text-cyan-400 dark:bg-cyan-950/30",
     },
@@ -60,18 +84,39 @@ export function DashboardPage() {
     ? summary.category_spend
     : [{ category: "No data yet", amount: 0 }];
 
+  // Nothing imported yet — show the import prompt rather than a grid of zeros.
+  const isEmpty =
+    !isError && summary.recent_transactions.length === 0 && summary.category_spend.length === 0;
+
   return (
     <div className="space-y-6 lg:space-y-8">
-      {isError ? <ErrorState title="Live data unavailable" body={error instanceof Error ? error.message : "API error"} /> : null}
+      {isError && !isAuthError(error) ? (
+        <ErrorState
+          title={isBackendUnreachable(error) ? "Live data unavailable" : "Could not load your data"}
+          body={error instanceof Error ? error.message : "API error"}
+        />
+      ) : null}
 
       <section className="hero-panel">
         <p className="section-kicker">Command center</p>
         <h2 className="section-title">Financial cockpit</h2>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-650 sm:text-base dark:text-slate-350 font-medium">
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base dark:text-slate-300 font-medium">
           A calm, high-signal view of your cash flow, spending pressure, and
           opportunities to improve your runway.
         </p>
       </section>
+
+      {isEmpty && (
+        <EmptyState
+          title="No transactions yet"
+          body="Import a bank statement CSV to populate your cockpit. Every number here is computed from your own data."
+          action={
+            <Link className="primary-button" to="/transactions">
+              Import transactions
+            </Link>
+          }
+        />
+      )}
 
       {/* Stat cards */}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -81,7 +126,7 @@ export function DashboardPage() {
             key={card.label}
           >
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold tracking-tight text-slate-450 dark:text-slate-500">
+              <span className="text-sm font-semibold tracking-tight text-slate-500 dark:text-slate-400">
                 {card.label}
               </span>
               <div className={`rounded-xl p-2.5 ${card.colorClass}`}>
@@ -92,7 +137,7 @@ export function DashboardPage() {
               {card.value}
             </p>
             {card.subLabel ? (
-              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                 {card.subLabel}
               </p>
             ) : null}
@@ -107,8 +152,8 @@ export function DashboardPage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="panel-title">Category spend</h3>
-              <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
-                Where your money went this month.
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Where your money went in {monthLabel}.
               </p>
             </div>
           </div>
@@ -152,7 +197,7 @@ export function DashboardPage() {
         {/* Budget health */}
         <div className="panel">
           <h3 className="panel-title">Budget health</h3>
-          <p className="mt-1 text-sm text-slate-400 dark:text-slate-500">
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Spot pressure points before they become surprises.
           </p>
           <div className="mt-5 space-y-4">
@@ -162,19 +207,21 @@ export function DashboardPage() {
               </p>
             ) : (
               summary.budget_health.map((item) => {
-                const progress = Math.min((item.spent / item.limit) * 100, 100);
+                const progress = item.limit > 0 ? Math.min((item.spent / item.limit) * 100, 100) : 0;
                 const isOver = item.status === "over";
+                const isWarning = item.status === "warning";
                 return (
                   <div
                     key={item.category}
-                    className="rounded-2xl border border-slate-200/50 bg-slate-50/50 p-4.5 transition hover:border-slate-350 dark:border-slate-800/60 dark:bg-slate-950/40"
+                    className="rounded-2xl border border-slate-200/50 bg-slate-50/50 p-4.5 transition hover:border-slate-300 dark:border-slate-800/60 dark:bg-slate-950/40"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-bold text-sm text-slate-800 dark:text-slate-100">
                         {item.category}
                       </p>
-                      <span className={isOver ? "badge-danger" : "badge-success"}>
-                        {item.status}
+                      {/* "warning" used to fall through to the green success style. */}
+                      <span className={isOver ? "badge-danger" : isWarning ? "badge-warning" : "badge-success"}>
+                        {isOver ? "Over" : isWarning ? "Warning" : "On track"}
                       </span>
                     </div>
                     <div className="mt-3.5 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
@@ -182,7 +229,9 @@ export function DashboardPage() {
                         className={`h-full rounded-full transition-all duration-300 ${
                           isOver
                             ? "bg-rose-500"
-                            : "bg-linear-to-r from-teal-500 to-cyan-500"
+                            : isWarning
+                              ? "bg-amber-500"
+                              : "bg-linear-to-r from-teal-500 to-cyan-500"
                         }`}
                         style={{ width: `${progress}%` }}
                       />
@@ -205,23 +254,23 @@ export function DashboardPage() {
       {summary.recent_transactions.length > 0 && (
         <section className="panel">
           <h3 className="panel-title">Recent transactions</h3>
-          <p className="mt-1 mb-5 text-sm text-slate-400 dark:text-slate-500">
+          <p className="mt-1 mb-5 text-sm text-slate-500 dark:text-slate-400">
             Last {summary.recent_transactions.length} transactions across all categories.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800/60">
-                  <th className="pb-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-400">
+                  <th className="pb-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Date
                   </th>
-                  <th className="pb-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-400">
+                  <th className="pb-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Description
                   </th>
-                  <th className="pb-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-400">
+                  <th className="pb-3 text-left font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Category
                   </th>
-                  <th className="pb-3 text-right font-semibold text-xs uppercase tracking-wider text-slate-400">
+                  <th className="pb-3 text-right font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Amount
                   </th>
                 </tr>
@@ -229,7 +278,7 @@ export function DashboardPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40">
                 {summary.recent_transactions.map((tx) => (
                   <tr key={tx.id} className="group">
-                    <td className="py-3 text-slate-500 dark:text-slate-400 tabular-nums">
+                    <td className="whitespace-nowrap py-3 text-slate-500 dark:text-slate-400 tabular-nums">
                       {tx.transaction_date}
                     </td>
                     <td className="py-3 font-medium text-slate-800 dark:text-slate-200 max-w-[200px] truncate">
@@ -243,10 +292,12 @@ export function DashboardPage() {
                     <td
                       className={`py-3 text-right font-bold tabular-nums ${
                         tx.amount >= 0
-                          ? "text-emerald-600 dark:text-emerald-400"
+                          ? "text-emerald-700 dark:text-emerald-400"
                           : "text-slate-800 dark:text-slate-100"
                       }`}
                     >
+                      {/* Sign as well as colour, so income vs spend does not rely on colour alone. */}
+                      {tx.amount >= 0 ? "+" : "−"}
                       {formatCurrency(Math.abs(tx.amount))}
                     </td>
                   </tr>

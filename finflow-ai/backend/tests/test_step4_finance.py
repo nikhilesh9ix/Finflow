@@ -1,7 +1,6 @@
-from datetime import date
 
 from app.services.categorization import classify_category
-from app.services.csv_import import parse_transaction_csv, normalize_transaction_type
+from app.services.csv_import import normalize_transaction_type, parse_transaction_csv
 
 
 def test_classify_food_keywords() -> None:

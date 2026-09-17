@@ -8,6 +8,7 @@ PBKDF2 or bcrypt for new systems.
 JWT uses HS256. For multi-service deployments, prefer RS256 with a key pair.
 """
 
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -54,11 +55,14 @@ def create_access_token(subject: str, expires_minutes: int | None = None) -> str
         "sub": subject,
         "iat": now,
         "exp": expires_at,
+        # Unique token id, so logging out can revoke this one session server-side.
+        "jti": uuid.uuid4().hex,
     }
     return jwt.encode(payload, settings.secret_key, algorithm=JWT_ALGORITHM)
 
 
-def decode_access_token(token: str) -> str | None:
+def decode_token_claims(token: str) -> dict[str, Any] | None:
+    """Verified claims of a token, or None if it is forged, malformed or expired."""
     try:
         payload = jwt.decode(
             token,
@@ -66,7 +70,11 @@ def decode_access_token(token: str) -> str | None:
             algorithms=[JWT_ALGORITHM],
             options={"require": ["sub", "exp", "iat"]},
         )
-        subject = payload.get("sub")
-        return subject if isinstance(subject, str) else None
     except jwt.InvalidTokenError:
         return None
+    return payload if isinstance(payload.get("sub"), str) else None
+
+
+def decode_access_token(token: str) -> str | None:
+    claims = decode_token_claims(token)
+    return claims["sub"] if claims else None

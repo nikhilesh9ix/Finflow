@@ -15,14 +15,18 @@ class Settings(BaseSettings):
     secret_key: str = _DEV_SECRET
     access_token_expire_minutes: int = 1440
 
-    # Database
-    database_url: str = "sqlite:///./finflow.db"
+    # Database — MongoDB. Local dev uses the MongoDB service on the default port.
+    mongodb_url: str = "mongodb://localhost:27017"
+    mongodb_db: str = "finflow"
 
     # CORS
     backend_cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
 
-    # AI
+    # AI — Groq takes precedence when both keys are set (faster + free tier).
     anthropic_api_key: str = ""
+    anthropic_model: str = "claude-opus-5"
+    groq_api_key: str = ""
+    groq_model: str = "openai/gpt-oss-120b"
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -48,8 +52,17 @@ class Settings(BaseSettings):
         return self.app_env == "production"
 
     @property
+    def ai_provider(self) -> str:
+        """Which LLM backend the copilot uses: 'groq', 'anthropic', or 'none'."""
+        if self.groq_api_key:
+            return "groq"
+        if self.anthropic_api_key:
+            return "anthropic"
+        return "none"
+
+    @property
     def ai_enabled(self) -> bool:
-        return bool(self.anthropic_api_key)
+        return self.ai_provider != "none"
 
 
 @lru_cache

@@ -1,0 +1,48 @@
+date,description,merchant,amount,type,category
+2026-06-01,Salary credit,Razorpay,310100,credit,Salary/Income
+2026-06-02,Apartment rent,Landlord,54850,debit,Bills
+2026-06-03,ELSS SIP,Kuvera,12550,debit,Investments
+2026-06-03,Index fund SIP,Groww,60100,debit,Investments
+2026-06-04,Gadget purchase,Croma,19567,debit,Shopping
+2026-06-04,NPS tier 1,NPS Trust,8050,debit,Investments
+2026-06-05,Emergency fund transfer,ICICI Savings,25100,debit,Investments
+2026-06-06,Concert tickets,BookMyShow,1718,debit,Entertainment
+2026-06-06,Groceries,Zepto,12100,debit,Food
+2026-06-08,Health insurance premium,Star Health,2800,debit,Bills
+2026-06-09,Broadband,Airtel Fiber,1499,debit,Bills
+2026-06-09,Gadget purchase,Croma,26613,debit,Shopping
+2026-06-12,Cab rides,Ola,1732,debit,Transport
+2026-06-24,Flight booking,IndiGo,6472,debit,Transport
+2026-06-26,Restaurant dinner,Toit,4900,debit,Food
+2026-07-01,Salary credit,Razorpay,309900,credit,Salary/Income
+2026-07-02,Apartment rent,Landlord,54900,debit,Bills
+2026-07-02,Restaurant dinner,Toit,1982,debit,Food
+2026-07-03,ELSS SIP,Kuvera,12650,debit,Investments
+2026-07-03,Gadget purchase,Croma,26456,debit,Shopping
+2026-07-03,Index fund SIP,Groww,59850,debit,Investments
+2026-07-04,NPS tier 1,NPS Trust,8050,debit,Investments
+2026-07-05,Emergency fund transfer,ICICI Savings,24950,debit,Investments
+2026-07-06,Groceries,Zepto,12000,debit,Food
+2026-07-08,Health insurance premium,Star Health,2800,debit,Bills
+2026-07-09,Broadband,Airtel Fiber,1499,debit,Bills
+2026-07-09,Flight booking,IndiGo,4261,debit,Transport
+2026-07-11,Cab rides,Ola,1531,debit,Transport
+2026-07-11,Gadget purchase,Croma,17550,debit,Shopping
+2026-07-15,Restaurant dinner,Toit,1995,debit,Food
+2026-07-23,Concert tickets,BookMyShow,5497,debit,Entertainment
+2026-07-25,Cab rides,Ola,503,debit,Transport
+2026-08-01,Salary credit,Razorpay,310100,credit,Salary/Income
+2026-08-02,Apartment rent,Landlord,55000,debit,Bills
+2026-08-02,Flight booking,IndiGo,11598,debit,Transport
+2026-08-03,ELSS SIP,Kuvera,12600,debit,Investments
+2026-08-03,Index fund SIP,Groww,60150,debit,Investments
+2026-08-04,NPS tier 1,NPS Trust,8000,debit,Investments
+2026-08-05,Emergency fund transfer,ICICI Savings,25000,debit,Investments
+2026-08-06,Groceries,Zepto,11900,debit,Food
+2026-08-08,Health insurance premium,Star Health,2800,debit,Bills
+2026-08-09,Broadband,Airtel Fiber,1499,debit,Bills
+2026-08-16,Restaurant dinner,Toit,2039,debit,Food
+2026-08-17,Cab rides,Ola,754,debit,Transport
+2026-08-19,Concert tickets,BookMyShow,1754,debit,Entertainment
+2026-08-21,Concert tickets,BookMyShow,4165,debit,Entertainment
+2026-08-26,Gadget purchase,Croma,20456,debit,Shopping

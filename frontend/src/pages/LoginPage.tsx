@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { z } from "zod";
 import { useAuthStore } from "../store/auth";
 
@@ -18,7 +18,7 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const { register, handleSubmit, formState } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: "demo@finflow.ai", password: "demo12345" },
+    defaultValues: { email: "", password: "" },
   });
 
   if (token) return <Navigate to="/" replace />;
@@ -27,12 +27,12 @@ export function LoginPage() {
     <main className="grid min-h-screen bg-[radial-gradient(ellipse_at_top_right,rgba(13,148,136,0.15),transparent_50%),radial-gradient(ellipse_at_bottom_left,rgba(99,102,241,0.12),transparent_50%),#020617] text-white lg:grid-cols-[1.05fr_0.95fr]">
       <section className="flex items-center px-8 py-12 sm:px-12 lg:px-20 lg:py-20">
         <div className="max-w-2xl">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-450/10 px-4.5 py-1.5 text-xs font-bold uppercase tracking-wider text-teal-350">
+          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-teal-400/20 bg-teal-400/10 px-4.5 py-1.5 text-xs font-bold uppercase tracking-wider text-teal-300">
             <ShieldCheck className="h-4 w-4 text-teal-400" aria-hidden="true" />
             Deterministic planning, AI enhanced
           </div>
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl bg-linear-to-r from-white via-slate-100 to-slate-350 bg-clip-text text-transparent">FinFlow AI</h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-400 font-medium">
+          <h1 className="text-5xl font-extrabold tracking-tight sm:text-7xl bg-linear-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">FinFlow AI</h1>
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-500 dark:text-slate-400 font-medium">
             A premium financial operating system for budgets, salary allocation, debt payoff, investing, and AI CFO guidance.
           </p>
           <div className="mt-12 grid gap-5 sm:grid-cols-3">
@@ -42,8 +42,8 @@ export function LoginPage() {
               { title: "Debt strategy", copy: "Prioritize with clarity" },
             ].map((item) => (
               <div key={item.title} className="rounded-2xl border border-white/5 bg-white/[0.03] p-5 backdrop-blur-xs transition duration-300 hover:-translate-y-1 hover:bg-white/[0.06] hover:border-white/10 hover:shadow-lg">
-                <p className="text-sm font-bold text-teal-350">{item.title}</p>
-                <p className="mt-2 text-xs leading-relaxed text-slate-450">{item.copy}</p>
+                <p className="text-sm font-bold text-teal-300">{item.title}</p>
+                <p className="mt-2 text-xs leading-relaxed text-slate-500 dark:text-slate-400">{item.copy}</p>
               </div>
             ))}
           </div>
@@ -62,8 +62,8 @@ export function LoginPage() {
           })}
         >
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">Sign in</h2>
-          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Demo credentials are pre-filled so you can explore immediately.</p>
-          
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Welcome back. Sign in to see your live financial picture.</p>
+
           <div className="mt-8 space-y-5">
             <div>
               <label className="form-label" htmlFor="email">Email</label>
@@ -84,6 +84,13 @@ export function LoginPage() {
             {loading ? "Signing in..." : "Enter FinFlow"}
             <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </button>
+
+          <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
+            New here?{" "}
+            <Link className="font-semibold text-teal-600 hover:underline dark:text-teal-400" to="/register">
+              Create an account
+            </Link>
+          </p>
         </form>
       </section>
     </main>

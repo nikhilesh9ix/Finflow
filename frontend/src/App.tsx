@@ -13,9 +13,9 @@ const BudgetsPage      = lazy(() => import("./pages/BudgetsPage").then((m) => ({
 const SalaryPage       = lazy(() => import("./pages/SalaryPage").then((m) => ({ default: m.SalaryPage })));
 const DebtsPage        = lazy(() => import("./pages/DebtsPage").then((m) => ({ default: m.DebtsPage })));
 const InvestmentsPage  = lazy(() => import("./pages/InvestmentsPage").then((m) => ({ default: m.InvestmentsPage })));
-const CopilotPage      = lazy(() => import("./pages/CopilotPage").then((m) => ({ default: m.CopilotPage })));
 const SettingsPage     = lazy(() => import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })));
 const LoginPage        = lazy(() => import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })));
+const RegisterPage     = lazy(() => import("./pages/RegisterPage").then((m) => ({ default: m.RegisterPage })));
 const NotFoundPage     = lazy(() => import("./pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 function PageFallback() {
@@ -40,6 +40,7 @@ export default function App() {
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route element={<ProtectedRoutes />}>
           <Route index element={<DashboardPage />} />
           <Route path="transactions" element={<TransactionsPage />} />
@@ -47,7 +48,6 @@ export default function App() {
           <Route path="salary" element={<SalaryPage />} />
           <Route path="debts" element={<DebtsPage />} />
           <Route path="investments" element={<InvestmentsPage />} />
-          <Route path="copilot" element={<CopilotPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

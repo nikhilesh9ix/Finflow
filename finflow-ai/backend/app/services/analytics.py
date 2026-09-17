@@ -1,277 +1,254 @@
 """
-Analytics service — all aggregations run inside the DB, not in Python.
+Analytics service — all aggregation runs inside MongoDB, not in Python.
 
-Each public function issues at most one SQL query.  Python only formats
-the result dict for the API layer.
+Each public function issues one aggregation pipeline (or a single find).
+Python only formats the result for the API layer. SQL → pipeline equivalents:
 
-SQLite compat note: month grouping uses func.strftime('%Y-%m', ...).
-PostgreSQL equivalent: func.to_char(col, 'YYYY-MM').
+    WHERE        → $match   (placed first, so indexes are used)
+    GROUP BY     → $group
+    HAVING       → $match after $group
+    LEFT JOIN    → $lookup  (budgets with no spend still come through)
+    SUM(CASE…)   → $sum of $cond
+
+Month filters use a [start, next-month) date range rather than comparing a
+formatted string, so the (user_id, transaction_date) index can serve them.
 """
 
-from datetime import date
+from datetime import UTC, datetime
 from decimal import Decimal
+from typing import Any
 
-from sqlalchemy import case, func, literal, or_, select
-from sqlalchemy.orm import Session
+from pymongo.database import Database
 
-from app.models import Budget, DebtAccount, InvestmentProfile, Transaction, User
+from app.db import mongo
+from app.models import DebtAccount, InvestmentProfile, User
+from app.services.categorization import INVESTMENT_CATEGORY
 
 _ZERO = Decimal("0")
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 
-def _to_dec(val) -> Decimal:
-    """Safe coercion from SQLite float/None aggregation result to Decimal."""
+def _to_dec(val: Any) -> Decimal:
+    """Aggregation results arrive as Decimal (via the codec), int 0, or None."""
     return Decimal(str(val)) if val is not None else _ZERO
 
 
-def _month_str(col):
-    """SQLite: strftime. PostgreSQL: func.to_char(col, 'YYYY-MM')."""
-    return func.strftime("%Y-%m", col)
+def _f(val: Any) -> float:
+    """Convert Decimal (or anything numeric) to float for JSON serialization."""
+    return float(val)
 
 
-def _latest_month(db: Session, user_id: int) -> str:
-    result = db.scalar(
-        select(func.max(Transaction.transaction_date)).where(Transaction.user_id == user_id)
+# Month label for grouping, e.g. "2026-06". Dates are stored at midnight UTC.
+_MONTH = {"$dateToString": {"format": "%Y-%m", "date": "$transaction_date", "timezone": "UTC"}}
+_ABS_AMOUNT = {"$abs": "$amount"}
+
+# Consumption only. Money moved into SIPs, ELSS, deposits or an emergency fund
+# leaves the account but is still the user's — counting it as spend made
+# disciplined savers show a negative savings rate. Every spend aggregate uses this.
+_SPEND_MATCH = {"transaction_type": "expense", "category": {"$ne": INVESTMENT_CATEGORY}}
+
+# The same two conditions as expressions, for use inside $cond.
+_IS_SPEND = {"$and": [{"$eq": ["$transaction_type", "expense"]}, {"$ne": ["$category", INVESTMENT_CATEGORY]}]}
+_IS_INVESTMENT = {"$and": [{"$eq": ["$transaction_type", "expense"]}, {"$eq": ["$category", INVESTMENT_CATEGORY]}]}
+_IS_INCOME = {"$eq": ["$transaction_type", "income"]}
+
+
+def _sum_if(condition: dict, value: Any) -> dict:
+    return {"$sum": {"$cond": [condition, value, 0]}}
+
+
+def _in_month(month_key: str) -> dict:
+    start, end = mongo.month_bounds(month_key)
+    return {"transaction_date": {"$gte": start, "$lt": end}}
+
+
+def _latest_month(db: Database, user_id: int) -> str:
+    latest = db[mongo.TRANSACTIONS].find_one(
+        {"user_id": user_id}, {"transaction_date": 1}, sort=[("transaction_date", -1)]
     )
-    return result.strftime("%Y-%m") if result else date.today().strftime("%Y-%m")
+    moment = latest["transaction_date"] if latest else datetime.now(UTC)
+    return moment.strftime("%Y-%m")
+
+
+def _aggregate(db: Database, collection: str, pipeline: list[dict]) -> list[dict]:
+    return list(db[collection].aggregate(pipeline))
 
 
 # ── public analytics functions ────────────────────────────────────────────────
 
 
-def monthly_spend(db: Session, user_id: int) -> list[dict]:
-    """Monthly expense totals — used for spend-trend charts."""
-    month_col = _month_str(Transaction.transaction_date)
-    rows = db.execute(
-        select(
-            month_col.label("month"),
-            func.sum(func.abs(Transaction.amount)).label("spend"),
-        )
-        .where(
-            Transaction.user_id == user_id,
-            Transaction.transaction_type == "expense",
-        )
-        .group_by(month_col)
-        .order_by(month_col)
-    ).all()
-    return [{"month": row.month, "spend": round(_to_dec(row.spend), 2)} for row in rows]
+def monthly_spend(db: Database, user_id: int) -> list[dict]:
+    """Monthly spend totals — used for spend-trend charts."""
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, **_SPEND_MATCH}},
+        {"$group": {"_id": _MONTH, "spend": {"$sum": _ABS_AMOUNT}}},
+        {"$sort": {"_id": 1}},
+    ])
+    return [{"month": row["_id"], "spend": _f(round(_to_dec(row["spend"]), 2))} for row in rows]
 
 
-def current_month_summary(db: Session, user_id: int, month_key: str | None = None) -> dict:
-    """Income and expense totals for a single month — one conditional-aggregate query."""
+def current_month_summary(db: Database, user_id: int, month_key: str | None = None) -> dict:
+    """Income, spend and invested totals for one month — a single conditional-sum group."""
     month_key = month_key or _latest_month(db, user_id)
-    row = db.execute(
-        select(
-            func.coalesce(
-                func.sum(
-                    case(
-                        (Transaction.transaction_type == "income", Transaction.amount),
-                        else_=literal(0),
-                    )
-                ),
-                0,
-            ).label("income"),
-            func.coalesce(
-                func.sum(
-                    case(
-                        (Transaction.transaction_type == "expense", func.abs(Transaction.amount)),
-                        else_=literal(0),
-                    )
-                ),
-                0,
-            ).label("expense"),
-        ).where(
-            Transaction.user_id == user_id,
-            _month_str(Transaction.transaction_date) == month_key,
-            Transaction.transaction_type != "transfer",
-        )
-    ).one()
-    income = _to_dec(row.income)
-    expense = _to_dec(row.expense)
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, "transaction_type": {"$ne": "transfer"}, **_in_month(month_key)}},
+        {"$group": {
+            "_id": None,
+            "income": _sum_if(_IS_INCOME, "$amount"),
+            "expense": _sum_if(_IS_SPEND, _ABS_AMOUNT),
+            "invested": _sum_if(_IS_INVESTMENT, _ABS_AMOUNT),
+        }},
+    ])
+    totals = rows[0] if rows else {}
+    income = _to_dec(totals.get("income"))
+    expense = _to_dec(totals.get("expense"))
     return {
         "month": month_key,
-        "income": round(income, 2),
-        "expense": round(expense, 2),
-        "net": round(income - expense, 2),
+        "income": _f(round(income, 2)),
+        "expense": _f(round(expense, 2)),
+        "invested": _f(round(_to_dec(totals.get("invested")), 2)),
+        "net": _f(round(income - expense, 2)),
     }
 
 
-def category_breakdown(db: Session, user_id: int, month_key: str | None = None) -> list[dict]:
-    """Expense totals by category for a month — GROUP BY category."""
+def category_breakdown(db: Database, user_id: int, month_key: str | None = None) -> list[dict]:
+    """Spend by category for a month, largest first."""
     month_key = month_key or _latest_month(db, user_id)
-    rows = db.execute(
-        select(
-            Transaction.category,
-            func.sum(func.abs(Transaction.amount)).label("amount"),
-        )
-        .where(
-            Transaction.user_id == user_id,
-            Transaction.transaction_type == "expense",
-            _month_str(Transaction.transaction_date) == month_key,
-        )
-        .group_by(Transaction.category)
-        .order_by(func.sum(func.abs(Transaction.amount)).desc())
-    ).all()
-    return [{"category": row.category, "amount": round(_to_dec(row.amount), 2)} for row in rows]
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, **_SPEND_MATCH, **_in_month(month_key)}},
+        {"$group": {"_id": "$category", "amount": {"$sum": _ABS_AMOUNT}}},
+        {"$sort": {"amount": -1}},
+    ])
+    return [{"category": row["_id"], "amount": _f(round(_to_dec(row["amount"]), 2))} for row in rows]
 
 
-def income_vs_expense(db: Session, user_id: int) -> list[dict]:
-    """Monthly income vs expense breakdown for historical charts."""
-    month_col = _month_str(Transaction.transaction_date)
-    rows = db.execute(
-        select(
-            month_col.label("month"),
-            func.coalesce(
-                func.sum(
-                    case(
-                        (Transaction.transaction_type == "income", Transaction.amount),
-                        else_=literal(0),
-                    )
-                ),
-                0,
-            ).label("income"),
-            func.coalesce(
-                func.sum(
-                    case(
-                        (Transaction.transaction_type == "expense", func.abs(Transaction.amount)),
-                        else_=literal(0),
-                    )
-                ),
-                0,
-            ).label("expense"),
-        )
-        .where(
-            Transaction.user_id == user_id,
-            Transaction.transaction_type != "transfer",
-        )
-        .group_by(month_col)
-        .order_by(month_col)
-    ).all()
+def income_vs_expense(db: Database, user_id: int) -> list[dict]:
+    """Monthly income vs spend for historical charts."""
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, "transaction_type": {"$ne": "transfer"}}},
+        {"$group": {
+            "_id": _MONTH,
+            "income": _sum_if(_IS_INCOME, "$amount"),
+            "expense": _sum_if(_IS_SPEND, _ABS_AMOUNT),
+        }},
+        {"$sort": {"_id": 1}},
+    ])
     return [
         {
-            "month": row.month,
-            "income": round(_to_dec(row.income), 2),
-            "expense": round(_to_dec(row.expense), 2),
+            "month": row["_id"],
+            "income": _f(round(_to_dec(row["income"]), 2)),
+            "expense": _f(round(_to_dec(row["expense"]), 2)),
         }
         for row in rows
     ]
 
 
-def recent_transactions(db: Session, user_id: int, limit: int = 10) -> list[dict]:
-    """Latest N transactions — SQL ORDER BY + LIMIT, no Python sort."""
-    rows = db.execute(
-        select(Transaction)
-        .where(Transaction.user_id == user_id)
-        .order_by(Transaction.transaction_date.desc(), Transaction.id.desc())
+def recent_transactions(db: Database, user_id: int, limit: int = 10) -> list[dict]:
+    """Latest N transactions — sorted and limited by the server."""
+    cursor = (
+        db[mongo.TRANSACTIONS]
+        .find({"user_id": user_id})
+        .sort([("transaction_date", -1), ("id", -1)])
         .limit(limit)
-    ).scalars().all()
+    )
+    rows = [mongo.from_mongo(doc) for doc in cursor]
     return [
         {
-            "id": t.id,
-            "transaction_date": t.transaction_date.isoformat(),
-            "description": t.description,
-            "merchant": t.merchant,
-            "category": t.category,
-            "amount": t.amount,
-            "transaction_type": t.transaction_type,
-            "source": t.source,
+            "id": t["id"],
+            "transaction_date": t["transaction_date"].isoformat(),
+            "description": t["description"],
+            "merchant": t.get("merchant"),
+            "category": t["category"],
+            "amount": _f(t["amount"]),
+            "transaction_type": t["transaction_type"],
+            "source": t.get("source", "manual"),
         }
         for t in rows
     ]
 
 
-def top_merchants(db: Session, user_id: int, limit: int = 5, month_key: str | None = None) -> list[dict]:
-    """Top merchants by spend for a month — one GROUP BY + LIMIT query."""
+def top_merchants(db: Database, user_id: int, limit: int = 5, month_key: str | None = None) -> list[dict]:
+    """Top merchants by spend for a month. Merchant names are grouped case-insensitively."""
     month_key = month_key or _latest_month(db, user_id)
-    merchant_col = func.coalesce(Transaction.merchant, Transaction.description)
-    rows = db.execute(
-        select(
-            merchant_col.label("merchant"),
-            func.sum(func.abs(Transaction.amount)).label("amount"),
-        )
-        .where(
-            Transaction.user_id == user_id,
-            Transaction.transaction_type == "expense",
-            _month_str(Transaction.transaction_date) == month_key,
-        )
-        .group_by(func.lower(merchant_col))
-        .order_by(func.sum(func.abs(Transaction.amount)).desc())
-        .limit(limit)
-    ).all()
-    return [{"merchant": row.merchant, "amount": round(_to_dec(row.amount), 2)} for row in rows]
+    merchant = {"$ifNull": ["$merchant", "$description"]}
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, **_SPEND_MATCH, **_in_month(month_key)}},
+        {"$group": {"_id": {"$toLower": merchant}, "merchant": {"$first": merchant}, "amount": {"$sum": _ABS_AMOUNT}}},
+        {"$sort": {"amount": -1}},
+        {"$limit": limit},
+    ])
+    return [{"merchant": row["merchant"], "amount": _f(round(_to_dec(row["amount"]), 2))} for row in rows]
 
 
-def recurring_transactions(db: Session, user_id: int) -> list[dict]:
+def recurring_transactions(db: Database, user_id: int) -> list[dict]:
     """
-    Merchants appearing 2+ times or across 2+ months — detected via SQL HAVING.
+    Outgoing payments appearing 2+ times or across 2+ months — subscriptions,
+    EMIs, SIPs, recurring bills.
 
-    Groups by lower(COALESCE(merchant, description)) + category.
-    HAVING: count >= 2 OR distinct_months >= 2.
+    Groups by lower(merchant or description) + category, then keeps groups where
+    count >= 2 OR distinct months >= 2 — the $match after $group is the HAVING.
+    Income is excluded: a monthly salary credit is recurring, but listing it as a
+    subscription made the copilot call it a drain on cash flow.
     """
-    month_col = _month_str(Transaction.transaction_date)
-    merchant_col = func.coalesce(Transaction.merchant, Transaction.description)
-    rows = db.execute(
-        select(
-            merchant_col.label("merchant"),
-            Transaction.category,
-            func.count().label("count"),
-            func.avg(func.abs(Transaction.amount)).label("avg_amount"),
-        )
-        .where(Transaction.user_id == user_id)
-        .group_by(func.lower(merchant_col), Transaction.category)
-        .having(
-            or_(
-                func.count() >= 2,
-                func.count(func.distinct(month_col)) >= 2,
-            )
-        )
-        .order_by(func.avg(func.abs(Transaction.amount)).desc())
-    ).all()
+    merchant = {"$ifNull": ["$merchant", "$description"]}
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, "transaction_type": "expense"}},
+        {"$group": {
+            "_id": {"merchant": {"$toLower": merchant}, "category": "$category"},
+            "merchant": {"$first": merchant},
+            "count": {"$sum": 1},
+            "avg_amount": {"$avg": _ABS_AMOUNT},
+            "months": {"$addToSet": _MONTH},
+        }},
+        {"$match": {"$or": [{"count": {"$gte": 2}}, {"months.1": {"$exists": True}}]}},
+        {"$sort": {"avg_amount": -1}},
+    ])
     return [
         {
-            "merchant": row.merchant,
-            "category": row.category,
-            "average_amount": round(_to_dec(row.avg_amount), 2),
-            "count": row.count,
+            "merchant": row["merchant"],
+            "category": row["_id"]["category"],
+            "average_amount": _f(round(_to_dec(row["avg_amount"]), 2)),
+            "count": row["count"],
         }
         for row in rows
     ]
 
 
-def budget_alerts(db: Session, user_id: int, month_key: str | None = None) -> list[dict]:
+def budget_alerts(db: Database, user_id: int, month_key: str | None = None) -> list[dict]:
     """
-    Budget vs actual spend — single LEFT JOIN query.
+    Budget vs actual spend — one pipeline with $lookup.
 
-    Joins budgets → transactions for the month so spent is computed in SQL.
-    No Python loops over transactions.
+    $lookup is the LEFT JOIN: a budget with no matching transactions still comes
+    through with an empty ``spend`` array, and is reported as 0 spent. An inner
+    join would silently hide new budgets.
     """
     month_key = month_key or _latest_month(db, user_id)
-    rows = db.execute(
-        select(
-            Budget.id.label("budget_id"),
-            Budget.category,
-            Budget.monthly_limit,
-            func.coalesce(func.sum(func.abs(Transaction.amount)), 0).label("spent"),
-        )
-        .select_from(Budget)
-        .outerjoin(
-            Transaction,
-            (Transaction.user_id == Budget.user_id)
-            & (Transaction.category == Budget.category)
-            & (Transaction.transaction_type == "expense")
-            & (_month_str(Transaction.transaction_date) == month_key),
-        )
-        .where(Budget.user_id == user_id)
-        .group_by(Budget.id, Budget.category, Budget.monthly_limit)
-        .order_by(Budget.category)
-    ).all()
+    start, end = mongo.month_bounds(month_key)
+    rows = _aggregate(db, mongo.BUDGETS, [
+        {"$match": {"user_id": user_id}},
+        {"$lookup": {
+            "from": mongo.TRANSACTIONS,
+            "let": {"uid": "$user_id", "cat": "$category"},
+            "pipeline": [
+                {"$match": {"$expr": {"$and": [
+                    {"$eq": ["$user_id", "$$uid"]},
+                    {"$eq": ["$category", "$$cat"]},
+                    {"$eq": ["$transaction_type", "expense"]},
+                    {"$gte": ["$transaction_date", start]},
+                    {"$lt": ["$transaction_date", end]},
+                ]}}},
+                {"$group": {"_id": None, "spent": {"$sum": _ABS_AMOUNT}}},
+            ],
+            "as": "spend",
+        }},
+        {"$sort": {"category": 1}},
+    ])
 
     alerts = []
     for row in rows:
-        limit = _to_dec(row.monthly_limit)
-        spent = _to_dec(row.spent)
+        limit = _to_dec(row["monthly_limit"])
+        spent = _to_dec(row["spend"][0]["spent"]) if row["spend"] else _ZERO
         remaining = limit - spent
         usage_ratio = spent / limit if limit > _ZERO else _ZERO
         if remaining < _ZERO:
@@ -282,37 +259,35 @@ def budget_alerts(db: Session, user_id: int, month_key: str | None = None) -> li
             status = "safe"
         alerts.append(
             {
-                "budget_id": row.budget_id,
-                "category": row.category,
-                "monthly_limit": round(limit, 2),
-                "spent": round(spent, 2),
-                "remaining": round(remaining, 2),
-                "usage_percent": round(usage_ratio * 100, 1),
+                "budget_id": row["id"],
+                "category": row["category"],
+                "monthly_limit": _f(round(limit, 2)),
+                "spent": _f(round(spent, 2)),
+                "remaining": _f(round(remaining, 2)),
+                "usage_percent": _f(round(usage_ratio * 100, 1)),
                 "status": status,
             }
         )
     return alerts
 
 
-def dashboard_summary(db: Session, user: User) -> dict:
-    """
-    Single-call summary for the dashboard widget.
-
-    Runs 4 targeted SQL queries (month, category, budget, recent).
-    Previously loaded all transactions into Python memory per call.
-    """
+def dashboard_summary(db: Database, user: User) -> dict:
+    """Single-call summary for the dashboard widget."""
     user_id = user.id
     month_key = _latest_month(db, user_id)
     current = current_month_summary(db, user_id, month_key)
 
-    actual_income: Decimal = current["income"]
-    monthly_spend_amount: Decimal = current["expense"]
-    projected_savings = round(actual_income - monthly_spend_amount, 2)
+    actual_income: float = current["income"]
+    monthly_spend_amount: float = current["expense"]
 
-    effective_income = actual_income if actual_income > _ZERO else user.monthly_income
-    savings_rate = (
-        round(projected_savings / effective_income * 100, 1) if effective_income > _ZERO else _ZERO
-    )
+    # A month whose salary has not been credited yet (a statement that runs into
+    # the next month) falls back to the user's average income. Savings and the
+    # rate must use that same figure: subtracting spend from ₹0 but dividing by the
+    # average produced a meaningless rate such as −5%.
+    income_is_estimated = actual_income <= 0 and user.monthly_income > 0
+    effective_income = float(user.monthly_income) if income_is_estimated else actual_income
+    projected_savings = round(effective_income - monthly_spend_amount, 2)
+    savings_rate = round(projected_savings / effective_income * 100, 1) if effective_income > 0 else 0.0
 
     alerts = budget_alerts(db, user_id, month_key)
     budget_health = [
@@ -326,9 +301,15 @@ def dashboard_summary(db: Session, user: User) -> dict:
     ]
 
     return {
-        "monthly_income": user.monthly_income,
+        # The latest month that has transactions — not necessarily today's month,
+        # since statements are imported after the fact. The UI labels figures with it.
+        "month": month_key,
+        "income_is_estimated": income_is_estimated,
+        "monthly_income": _f(user.monthly_income),
         "actual_income": round(actual_income, 2),
         "monthly_spend": round(monthly_spend_amount, 2),
+        # Reported separately: already part of projected_savings, not spend.
+        "invested": current["invested"],
         "projected_savings": projected_savings,
         "savings_rate": savings_rate,
         "category_spend": category_breakdown(db, user_id, month_key),
@@ -337,22 +318,76 @@ def dashboard_summary(db: Session, user: User) -> dict:
     }
 
 
+# ── income derivation ─────────────────────────────────────────────────────────
+
+# How many recent months with income feed the average. Long enough to smooth an
+# irregular freelancer month, short enough that a raise shows up quickly.
+_INCOME_LOOKBACK_MONTHS = 3
+
+
+def derive_monthly_income(db: Database, user_id: int) -> Decimal:
+    """
+    Average monthly income across the most recent months that contain income.
+
+    Only months with at least one income transaction count, so a month that is
+    still in progress (salary not yet credited) does not drag the average down.
+    Returns 0 when no income has been imported.
+    """
+    rows = _aggregate(db, mongo.TRANSACTIONS, [
+        {"$match": {"user_id": user_id, "transaction_type": "income"}},
+        {"$group": {"_id": _MONTH, "income": {"$sum": "$amount"}}},
+        {"$sort": {"_id": -1}},
+        {"$limit": _INCOME_LOOKBACK_MONTHS},
+    ])
+    if not rows:
+        return _ZERO
+    total = sum((_to_dec(row["income"]) for row in rows), _ZERO)
+    return round(total / len(rows), 2)
+
+
+def sync_income_from_transactions(db: Database, user: User) -> None:
+    """
+    Recompute user.monthly_income from imported transactions and persist it.
+
+    Income is never entered by hand — it is whatever the statements show. The
+    emergency-fund target used to be seeded from the income typed at sign-up, so
+    it is seeded here instead, but only while it is still unset: a target the
+    user chose themselves is never overwritten.
+    """
+    # With no income transactions there is nothing to derive from — keep the stored
+    # value rather than overwriting it with 0 (this also runs on every login).
+    if not db[mongo.TRANSACTIONS].count_documents({"user_id": user.id, "transaction_type": "income"}, limit=1):
+        return
+    user.monthly_income = derive_monthly_income(db, user.id)
+    mongo.update(db, mongo.USERS, {"id": user.id}, {"monthly_income": user.monthly_income})
+    if user.monthly_income > _ZERO:
+        mongo.update(
+            db,
+            mongo.INVESTMENT_PROFILES,
+            {"user_id": user.id, "emergency_fund_target": _ZERO},
+            {"emergency_fund_target": user.monthly_income * 3},
+        )
+
+
 # ── salary / debt / investment ─────────────────────────────────────────────────
 
 
-def salary_plan(db: Session, user: User) -> dict:
-    profile = db.scalar(select(InvestmentProfile).where(InvestmentProfile.user_id == user.id))
-    debt_total = db.scalar(
-        select(func.coalesce(func.sum(DebtAccount.emi_amount), 0))
-        .where(DebtAccount.user_id == user.id)
-    )
-    debt_accounts_count = db.scalar(
-        select(func.count(DebtAccount.id)).where(DebtAccount.user_id == user.id)
-    ) or 0
+def _profile(db: Database, user_id: int) -> InvestmentProfile | None:
+    return InvestmentProfile.from_doc(db[mongo.INVESTMENT_PROFILES].find_one({"user_id": user_id}))
+
+
+def salary_plan(db: Database, user: User) -> dict:
+    profile = _profile(db, user.id)
+    debt_rows = _aggregate(db, mongo.DEBT_ACCOUNTS, [
+        {"$match": {"user_id": user.id}},
+        {"$group": {"_id": None, "emi": {"$sum": "$emi_amount"}, "count": {"$sum": 1}}},
+    ])
+    debt_totals = debt_rows[0] if debt_rows else {}
+    debt_accounts_count = int(debt_totals.get("count", 0))
 
     income: Decimal = user.monthly_income
-    debt_payments = _to_dec(debt_total)
-    investment_amount = (
+    debt_payments = _to_dec(debt_totals.get("emi"))
+    desired_investment = (
         profile.monthly_investment_capacity if profile else max(income * Decimal("0.15"), _ZERO)
     )
     emergency_gap = (
@@ -360,51 +395,56 @@ def salary_plan(db: Session, user: User) -> dict:
         if profile
         else income * 3
     )
-    emergency_amount = min(max(emergency_gap / 12, _ZERO), income * Decimal("0.15"))
-    essentials = min(
-        income * Decimal("0.5"),
-        max(income - debt_payments - investment_amount - emergency_amount, _ZERO),
-    )
-    flexible = max(income - essentials - debt_payments - investment_amount - emergency_amount, _ZERO)
+
+    # Waterfall: each bucket draws only from what is left, in priority order —
+    # contractual EMIs, then essentials, emergency fund, investments, flexible.
+    # Taking investments before checking what remained let the buckets add up to
+    # more than income (₹40,000 income was split into ₹50,000).
+    remaining = max(income - debt_payments, _ZERO)
+    essentials = min(income * Decimal("0.5"), remaining)
+    remaining -= essentials
+    emergency_amount = min(max(emergency_gap / 12, _ZERO), income * Decimal("0.15"), remaining)
+    remaining -= emergency_amount
+    investment_amount = min(desired_investment, remaining)
+    remaining -= investment_amount
+    flexible = remaining
+    # EMIs are owed regardless; if they exceed income, report the gap instead of hiding it.
+    shortfall = max(debt_payments - income, _ZERO)
 
     return {
-        "income": round(income, 2),
+        "income": _f(round(income, 2)),
+        "shortfall": _f(round(shortfall, 2)),
         "allocations": [
-            {"bucket": "Essentials", "amount": round(essentials, 2), "note": "Rent, groceries, utilities, transport"},
-            {"bucket": "Debt EMIs", "amount": round(debt_payments, 2), "note": f"{debt_accounts_count} active debt account{'s' if debt_accounts_count != 1 else ''}"},
-            {"bucket": "Investments", "amount": round(investment_amount, 2), "note": f"Risk profile: {profile.risk_profile if profile else 'balanced'}"},
-            {"bucket": "Emergency fund", "amount": round(emergency_amount, 2), "note": "Build liquidity before lifestyle expansion"},
-            {"bucket": "Flexible", "amount": round(flexible, 2), "note": "Dining, shopping, and discretionary spend"},
+            {"bucket": "Essentials", "amount": _f(round(essentials, 2)), "note": "Rent, groceries, utilities, transport"},
+            {"bucket": "Debt EMIs", "amount": _f(round(debt_payments, 2)), "note": f"{debt_accounts_count} active debt account{'s' if debt_accounts_count != 1 else ''}"},
+            {"bucket": "Investments", "amount": _f(round(investment_amount, 2)), "note": f"Risk profile: {profile.risk_profile if profile else 'balanced'}"},
+            {"bucket": "Emergency fund", "amount": _f(round(emergency_amount, 2)), "note": "Build liquidity before lifestyle expansion"},
+            {"bucket": "Flexible", "amount": _f(round(flexible, 2)), "note": "Dining, shopping, and discretionary spend"},
         ],
     }
 
 
-def debt_strategy(db: Session, user_id: int) -> dict:
-    accounts = db.execute(
-        select(DebtAccount)
-        .where(DebtAccount.user_id == user_id)
-        .order_by(DebtAccount.interest_rate.desc())
-    ).scalars().all()
-
-    totals = db.execute(
-        select(
-            func.coalesce(func.sum(DebtAccount.outstanding_amount), 0).label("total_balance"),
-            func.coalesce(func.sum(DebtAccount.emi_amount), 0).label("monthly_emi"),
-        ).where(DebtAccount.user_id == user_id)
-    ).one()
+def debt_strategy(db: Database, user_id: int) -> dict:
+    """Avalanche order: highest interest rate first."""
+    accounts = [
+        DebtAccount.from_doc(doc)
+        for doc in db[mongo.DEBT_ACCOUNTS].find({"user_id": user_id}).sort("interest_rate", -1)
+    ]
+    total_balance = sum((a.outstanding_amount for a in accounts), _ZERO)
+    monthly_emi = sum((a.emi_amount for a in accounts), _ZERO)
 
     return {
         "method": "avalanche",
-        "total_outstanding": round(_to_dec(totals.total_balance), 2),
-        "monthly_emi": round(_to_dec(totals.monthly_emi), 2),
+        "total_outstanding": _f(round(total_balance, 2)),
+        "monthly_emi": _f(round(monthly_emi, 2)),
         "priority": [
             {
                 "id": a.id,
                 "lender": a.lender,
                 "debt_type": a.debt_type,
-                "outstanding_amount": a.outstanding_amount,
-                "interest_rate": a.interest_rate,
-                "emi_amount": a.emi_amount,
+                "outstanding_amount": _f(a.outstanding_amount),
+                "interest_rate": _f(a.interest_rate),
+                "emi_amount": _f(a.emi_amount),
                 "due_day": a.due_day,
             }
             for a in accounts
@@ -417,45 +457,47 @@ def debt_strategy(db: Session, user_id: int) -> dict:
     }
 
 
-def investment_profile_summary(db: Session, user: User) -> dict:
-    profile = db.scalar(select(InvestmentProfile).where(InvestmentProfile.user_id == user.id))
+def emergency_readiness(target: Decimal, current: Decimal) -> tuple[Decimal, str]:
+    """Remaining emergency-fund gap (never negative) and the readiness message."""
+    gap = max(target - current, _ZERO)
+    if target <= _ZERO:
+        return gap, "Set an emergency fund target — typically 3 to 6 months of expenses."
+    if gap == _ZERO:
+        return gap, "Emergency fund is ready; review SIP allocation."
+    return gap, "Emergency fund still needs funding before raising risk."
+
+
+def investment_profile_summary(db: Database, user: User) -> dict:
+    profile = _profile(db, user.id)
     if not profile:
         return {
             "risk_profile": "balanced",
-            "monthly_investment_capacity": _ZERO,
-            "emergency_fund_target": user.monthly_income * 3,
-            "emergency_fund_current": _ZERO,
-            "emergency_gap": user.monthly_income * 3,
+            "monthly_investment_capacity": 0.0,
+            "emergency_fund_target": _f(user.monthly_income * 3),
+            "emergency_fund_current": 0.0,
+            "emergency_gap": _f(user.monthly_income * 3),
             "readiness": "Create an investment profile and emergency fund target before increasing risk.",
         }
-    gap = max(profile.emergency_fund_target - profile.emergency_fund_current, _ZERO)
-    readiness = (
-        "Emergency fund is ready; review SIP allocation."
-        if gap == _ZERO
-        else "Emergency fund still needs funding before raising risk."
-    )
+    gap, readiness = emergency_readiness(profile.emergency_fund_target, profile.emergency_fund_current)
     return {
         "risk_profile": profile.risk_profile,
-        "monthly_investment_capacity": profile.monthly_investment_capacity,
-        "emergency_fund_target": profile.emergency_fund_target,
-        "emergency_fund_current": profile.emergency_fund_current,
-        "emergency_gap": round(gap, 2),
+        "monthly_investment_capacity": _f(profile.monthly_investment_capacity),
+        "emergency_fund_target": _f(profile.emergency_fund_target),
+        "emergency_fund_current": _f(profile.emergency_fund_current),
+        "emergency_gap": _f(round(gap, 2)),
         "readiness": readiness,
     }
 
 
-# ── rule-based fallback (used by ai/copilot.py when ANTHROPIC_API_KEY absent) ─
+# ── rule-based fallback (used by ai/copilot.py when no AI key is configured) ──
 
 
-def copilot_answer(db: Session, user: User, question: str) -> dict:
+def copilot_answer(db: Database, user: User, question: str) -> dict:
     normalized = question.lower().strip()
     if not normalized:
         return {"answer": "Ask about spending, budgets, salary allocation, debt, or investments.", "data_status": "missing_question"}
 
-    has_data = db.scalar(
-        select(func.count(Transaction.id)).where(Transaction.user_id == user.id)
-    ) or 0
-    if not has_data:
+    if not db[mongo.TRANSACTIONS].count_documents({"user_id": user.id}, limit=1):
         return {"answer": "No transactions yet. Upload a CSV so I can analyze spending and budget health.", "data_status": "missing_transactions"}
 
     if "debt" in normalized or "loan" in normalized or "emi" in normalized:

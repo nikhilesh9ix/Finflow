@@ -95,6 +95,8 @@ class InvestmentProfileResponse(TimestampedResponse):
     emergency_fund_target: Decimal
     emergency_fund_current: Decimal
     notes: str | None
+    emergency_gap: Decimal  # never negative
+    readiness: str
 
 
 class ChatMessageCreateRequest(BaseModel):

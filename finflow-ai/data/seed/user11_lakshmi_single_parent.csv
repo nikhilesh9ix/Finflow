@@ -1,0 +1,48 @@
+date,description,merchant,amount,category
+01/06/2026,Salary credit,Wipro,72100,Salary/Income
+02/06/2026,House rent,Landlord,-18050,Bills
+04/06/2026,Groceries,DMart,-11100,Food
+05/06/2026,Kids clothing,FirstCry,-2026,Shopping
+05/06/2026,School bus fee,DAV Transport,-2200,Transport
+05/06/2026,School fees,DAV Public School,-14000,Education
+06/06/2026,After-school daycare,Kidzee,-6550,Education
+07/06/2026,Child support transfer,Family,10000,Salary/Income
+09/06/2026,Electricity bill,BESCOM,-1900,Bills
+10/06/2026,Recurring deposit,Canara Bank,-4000,Investments
+11/06/2026,Ice cream treat,Naturals,-545,Food
+11/06/2026,Mobile and broadband,Jio,-998,Bills
+13/06/2026,Kids clothing,FirstCry,-1548,Shopping
+13/06/2026,Paediatrician visit,Rainbow Clinic,-1625,Healthcare
+23/06/2026,Auto rides,Auto,-887,Transport
+23/06/2026,Paediatrician visit,Rainbow Clinic,-866,Healthcare
+01/07/2026,Salary credit,Wipro,71800,Salary/Income
+02/07/2026,House rent,Landlord,-18000,Bills
+03/07/2026,Auto rides,Auto,-472,Transport
+04/07/2026,Groceries,DMart,-10900,Food
+05/07/2026,School bus fee,DAV Transport,-2200,Transport
+05/07/2026,School fees,DAV Public School,-13850,Education
+06/07/2026,After-school daycare,Kidzee,-6450,Education
+07/07/2026,Child support transfer,Family,10000,Salary/Income
+09/07/2026,Electricity bill,BESCOM,-1900,Bills
+10/07/2026,Ice cream treat,Naturals,-364,Food
+10/07/2026,Recurring deposit,Canara Bank,-4000,Investments
+11/07/2026,Mobile and broadband,Jio,-998,Bills
+11/07/2026,Paediatrician visit,Rainbow Clinic,-1828,Healthcare
+13/07/2026,Auto rides,Auto,-754,Transport
+17/07/2026,Kids clothing,FirstCry,-1537,Shopping
+21/07/2026,Ice cream treat,Naturals,-392,Food
+01/08/2026,Salary credit,Wipro,72100,Salary/Income
+02/08/2026,House rent,Landlord,-17950,Bills
+02/08/2026,Paediatrician visit,Rainbow Clinic,-1261,Healthcare
+03/08/2026,Ice cream treat,Naturals,-420,Food
+04/08/2026,Groceries,DMart,-10950,Food
+05/08/2026,School bus fee,DAV Transport,-2200,Transport
+05/08/2026,School fees,DAV Public School,-14050,Education
+06/08/2026,After-school daycare,Kidzee,-6650,Education
+07/08/2026,Child support transfer,Family,10000,Salary/Income
+09/08/2026,Electricity bill,BESCOM,-1900,Bills
+10/08/2026,Recurring deposit,Canara Bank,-4000,Investments
+11/08/2026,Kids clothing,FirstCry,-2961,Shopping
+11/08/2026,Mobile and broadband,Jio,-998,Bills
+21/08/2026,Auto rides,Auto,-676,Transport
+27/08/2026,Kids clothing,FirstCry,-2175,Shopping

@@ -8,9 +8,7 @@ and that existing category overrides auto-classification.
 
 from decimal import Decimal
 
-import pytest
-
-from app.services.csv_import import parse_transaction_csv, normalize_transaction_type
+from app.services.csv_import import normalize_transaction_type, parse_transaction_csv
 
 
 class TestNormalizeTransactionType:

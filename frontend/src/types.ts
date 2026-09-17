@@ -59,10 +59,13 @@ export type BudgetHealth = {
 };
 
 export type DashboardSummary = {
-  monthly_income: number;     // user's configured salary
+  month: string;              // "YYYY-MM" — latest month with transactions, not today's
+  income_is_estimated: boolean; // no salary credited that month yet; average income used
+  monthly_income: number;     // avg of last 3 months of income transactions
   actual_income: number;      // income transactions received this month
-  monthly_spend: number;      // expense transactions this month
-  projected_savings: number;  // actual_income - monthly_spend
+  monthly_spend: number;      // consumption this month — excludes investments
+  invested: number;           // moved into SIPs, deposits, emergency fund this month
+  projected_savings: number;  // income − monthly_spend (invested money counts as saved)
   savings_rate: number;       // percentage
   category_spend: CategorySpend[];
   budget_health: BudgetHealth[];
@@ -79,6 +82,7 @@ export type SalaryAllocation = {
 
 export type SalaryPlan = {
   income: number;
+  shortfall: number;          // EMIs above income; 0 when the plan balances
   allocations: SalaryAllocation[];
 };
 

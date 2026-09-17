@@ -15,6 +15,10 @@ type ToastContextValue = {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// Monotonic ids: Date.now() gave two toasts raised in the same millisecond the
+// same React key, so one of them was dropped or rendered twice.
+let nextToastId = 0;
+
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
@@ -25,7 +29,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   }, [toasts]);
 
   const showToast = (message: string, kind: ToastKind = "info") => {
-    setToasts((items) => [...items, { id: Date.now(), message, kind }]);
+    setToasts((items) => [...items, { id: ++nextToastId, message, kind }]);
   };
 
   const value = useMemo(() => ({ showToast }), []);

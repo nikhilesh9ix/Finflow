@@ -25,6 +25,9 @@ export function SettingsPage() {
           <div>
             <dt className="text-sm text-slate-500 dark:text-slate-400">Monthly income</dt>
             <dd className="mt-1 font-semibold">{formatCurrency(user?.monthly_income ?? 0)}</dd>
+            <dd className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Average of your last 3 months of salary credits, updated on each import.
+            </dd>
           </div>
           <div>
             <dt className="text-sm text-slate-500 dark:text-slate-400">Currency</dt>

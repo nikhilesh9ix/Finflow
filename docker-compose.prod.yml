@@ -2,34 +2,25 @@
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 #
 # Required env vars (set via CI secrets or .env):
-#   SECRET_KEY, ANTHROPIC_API_KEY, POSTGRES_PASSWORD, DATABASE_URL
+#   SECRET_KEY, GROQ_API_KEY or ANTHROPIC_API_KEY, MONGO_PASSWORD
 
-version: "3.9"
 
 services:
-  postgres:
-    image: postgres:16-alpine
+  mongo:
+    # Production runs with authentication on.
     environment:
-      POSTGRES_USER: finflow
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: finflow_ai
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U finflow -d finflow_ai"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
+      MONGO_INITDB_ROOT_USERNAME: finflow
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   backend:
     environment:
       APP_ENV: production
-      DATABASE_URL: postgresql+psycopg://finflow:${POSTGRES_PASSWORD}@postgres:5432/finflow_ai
+      MONGODB_URL: mongodb://finflow:${MONGO_PASSWORD}@mongo:27017/?authSource=admin
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost}
-    depends_on:
-      postgres:
-        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -40,6 +31,3 @@ services:
       resources:
         limits:
           memory: 128M
-
-volumes:
-  postgres_data:

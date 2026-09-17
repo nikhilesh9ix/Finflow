@@ -1,0 +1,44 @@
+date,description,amount,type,category
+2026-06-01,Pension credit,"₹42,000",credit,Salary/Income
+2026-06-02,Grandchildren gifts,"₹1,129",debit,Shopping
+2026-06-02,Grandchildren gifts,"₹1,058",debit,Shopping
+2026-06-02,Newspaper subscription,₹350,debit,Entertainment
+2026-06-03,Society maintenance,"₹3,200",debit,Bills
+2026-06-04,Groceries,"₹6,700",debit,Food
+2026-06-06,Senior citizen FD deposit,"₹10,000",debit,Investments
+2026-06-08,Diabetes medicines,"₹2,082",debit,Healthcare
+2026-06-08,Electricity bill,"₹1,600",debit,Bills
+2026-06-12,Health insurance premium,"₹4,200",debit,Bills
+2026-06-15,FD interest credit,"₹8,550",credit,Salary/Income
+2026-06-20,Temple donation,₹272,debit,Other
+2026-06-22,Temple donation,₹354,debit,Other
+2026-06-23,Doctor consultation,₹500,debit,Healthcare
+2026-06-26,Doctor consultation,₹714,debit,Healthcare
+2026-07-01,Pension credit,"₹41,800",credit,Salary/Income
+2026-07-02,Newspaper subscription,₹350,debit,Entertainment
+2026-07-03,Diabetes medicines,"₹1,436",debit,Healthcare
+2026-07-03,Society maintenance,"₹3,200",debit,Bills
+2026-07-04,Doctor consultation,₹595,debit,Healthcare
+2026-07-04,Groceries,"₹6,900",debit,Food
+2026-07-06,Senior citizen FD deposit,"₹10,150",debit,Investments
+2026-07-08,Electricity bill,"₹1,600",debit,Bills
+2026-07-12,Grandchildren gifts,"₹1,326",debit,Shopping
+2026-07-12,Health insurance premium,"₹4,200",debit,Bills
+2026-07-15,FD interest credit,"₹8,600",credit,Salary/Income
+2026-07-17,Grandchildren gifts,"₹1,226",debit,Shopping
+2026-07-21,Doctor consultation,₹895,debit,Healthcare
+2026-07-27,Temple donation,₹660,debit,Other
+2026-08-01,Pension credit,"₹41,800",credit,Salary/Income
+2026-08-02,Newspaper subscription,₹350,debit,Entertainment
+2026-08-03,Society maintenance,"₹3,200",debit,Bills
+2026-08-04,Groceries,"₹6,950",debit,Food
+2026-08-05,Temple donation,"₹1,054",debit,Other
+2026-08-06,Senior citizen FD deposit,"₹10,000",debit,Investments
+2026-08-08,Electricity bill,"₹1,600",debit,Bills
+2026-08-08,Temple donation,₹806,debit,Other
+2026-08-10,Doctor consultation,"₹1,061",debit,Healthcare
+2026-08-12,Health insurance premium,"₹4,200",debit,Bills
+2026-08-15,FD interest credit,"₹8,650",credit,Salary/Income
+2026-08-18,Grandchildren gifts,"₹2,347",debit,Shopping
+2026-08-21,Doctor consultation,"₹1,033",debit,Healthcare
+2026-08-24,Diabetes medicines,"₹2,317",debit,Healthcare

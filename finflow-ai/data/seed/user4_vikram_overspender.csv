@@ -1,0 +1,30 @@
+date,description,merchant,amount,type,category
+2026-05-01,Salary credit,Amazon Payroll,250000,credit,Salary/Income
+2026-05-02,Apartment rent,Prestige Group,58000,debit,Bills
+2026-05-03,Home loan EMI,ICICI Bank,46000,debit,EMI/Loan
+2026-05-04,Car loan EMI,Kotak Mahindra,18500,debit,EMI/Loan
+2026-05-05,Credit card payment,HDFC Credit Card,32000,debit,EMI/Loan
+2026-05-06,Club membership,Bangalore Club,8000,debit,Entertainment
+2026-05-08,Fine dining,The Oberoi,9400,debit,Food
+2026-05-10,Groceries,Nature Basket,11200,debit,Food
+2026-05-12,Fuel,Shell,6800,debit,Transport
+2026-05-14,Weekend getaway,MakeMyTrip,34000,debit,Entertainment
+2026-05-17,Electronics,Croma,42000,debit,Shopping
+2026-05-20,Swiggy orders,Swiggy,6300,debit,Food
+2026-05-23,Designer clothing,Tata CLiQ Luxury,18700,debit,Shopping
+2026-05-26,Netflix subscription,Netflix,649,debit,Entertainment
+2026-05-28,Gym membership,Cult Fit,3500,debit,Healthcare
+2026-06-01,Salary credit,Amazon Payroll,250000,credit,Salary/Income
+2026-06-02,Apartment rent,Prestige Group,58000,debit,Bills
+2026-06-03,Home loan EMI,ICICI Bank,46000,debit,EMI/Loan
+2026-06-04,Car loan EMI,Kotak Mahindra,18500,debit,EMI/Loan
+2026-06-05,Credit card payment,HDFC Credit Card,41000,debit,EMI/Loan
+2026-06-06,Club membership,Bangalore Club,8000,debit,Entertainment
+2026-06-09,Fine dining,Toit Brewpub,7600,debit,Food
+2026-06-11,Groceries,Nature Basket,10400,debit,Food
+2026-06-13,Fuel,Shell,7200,debit,Transport
+2026-06-16,Concert tickets,BookMyShow,12000,debit,Entertainment
+2026-06-19,Watch purchase,Ethos Watches,86000,debit,Shopping
+2026-06-22,Swiggy orders,Swiggy,7100,debit,Food
+2026-06-26,Netflix subscription,Netflix,649,debit,Entertainment
+2026-06-28,Gym membership,Cult Fit,3500,debit,Healthcare

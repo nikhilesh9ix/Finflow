@@ -7,7 +7,7 @@ FinFlow AI is a personal financial operating system MVP. It is designed to help 
 ```text
 finflow-ai/
   frontend/   React + Vite + Tailwind CSS
-  backend/    FastAPI + SQLAlchemy + Pydantic
+  backend/    FastAPI + PyMongo + Pydantic
   data/       Seed and demo datasets
   docs/       Product and engineering docs
   scripts/    Local automation scripts
@@ -31,16 +31,22 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 copy .env.example .env
-alembic upgrade head
 python -m app.seed
 python -m uvicorn app.main:app --reload
 ```
 
-Start Postgres:
+MongoDB must be running. Locally, install MongoDB Community Server (it runs as a
+Windows service on port 27017), or start just the database with Docker:
 
 ```bash
-cd finflow-ai
-docker compose up -d postgres
+docker compose up -d mongo
+```
+
+Moving data from the old SQLite database (one-off, dry run first):
+
+```bash
+python -m app.scripts.migrate_sqlite_to_mongo
+python -m app.scripts.migrate_sqlite_to_mongo --apply
 ```
 
 Default local URLs:
@@ -58,7 +64,7 @@ copy frontend\.env.example frontend\.env
 copy backend\.env.example backend\.env
 ```
 
-The backend can use SQLite for quick local bootstrapping or Postgres via Docker Compose.
+The backend stores all data in MongoDB, configured by `MONGODB_URL` and `MONGODB_DB`.
 
 Frontend environment variables:
 

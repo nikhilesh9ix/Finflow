@@ -1,4 +1,4 @@
-import { AlertCircle, Inbox, Loader2 } from "lucide-react";
+import { AlertCircle, Inbox } from "lucide-react";
 import type { ReactNode } from "react";
 
 export function LoadingSkeleton({ variant = "cards" }: { variant?: "cards" | "table" | "chat" }) {
@@ -35,7 +35,7 @@ export function LoadingSkeleton({ variant = "cards" }: { variant?: "cards" | "ta
 export function EmptyState({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
     <div className="panel flex flex-col items-center justify-center gap-3 py-10 text-center">
-      <Inbox className="h-8 w-8 text-slate-400" aria-hidden="true" />
+      <Inbox className="h-8 w-8 text-slate-500 dark:text-slate-400" aria-hidden="true" />
       <div>
         <h3 className="text-lg font-semibold text-slate-950 dark:text-white">{title}</h3>
         <p className="mt-1 max-w-md text-sm text-slate-500 dark:text-slate-400">{body}</p>
@@ -56,15 +56,6 @@ export function ErrorState({ title, body, action }: { title: string; body: strin
           {action ? <div className="mt-3">{action}</div> : null}
         </div>
       </div>
-    </div>
-  );
-}
-
-export function LoadingOverlay({ label = "Loading" }: { label?: string }) {
-  return (
-    <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-      <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-      {label}
     </div>
   );
 }

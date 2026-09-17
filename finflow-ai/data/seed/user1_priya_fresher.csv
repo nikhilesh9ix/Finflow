@@ -1,0 +1,23 @@
+date,description,merchant,amount,type,category
+2026-05-01,Salary credit,TCS Payroll,42000,credit,Salary/Income
+2026-05-02,PG rent,Sunrise PG,11000,debit,Bills
+2026-05-03,Mobile recharge,Jio,299,debit,Bills
+2026-05-05,Mess food,Sunrise PG Mess,4500,debit,Food
+2026-05-07,Metro card recharge,DMRC,900,debit,Transport
+2026-05-11,Movie night,PVR Cinemas,650,debit,Entertainment
+2026-05-14,Groceries,DMart,1850,debit,Food
+2026-05-18,Swiggy order,Swiggy,540,debit,Food
+2026-05-21,Education loan EMI,SBI,6500,debit,EMI/Loan
+2026-05-25,Recurring deposit,SBI RD,3000,debit,Other
+2026-05-28,Netflix subscription,Netflix,199,debit,Entertainment
+2026-06-01,Salary credit,TCS Payroll,42000,credit,Salary/Income
+2026-06-02,PG rent,Sunrise PG,11000,debit,Bills
+2026-06-03,Mobile recharge,Jio,299,debit,Bills
+2026-06-05,Mess food,Sunrise PG Mess,4500,debit,Food
+2026-06-07,Metro card recharge,DMRC,900,debit,Transport
+2026-06-09,Swiggy order,Swiggy,720,debit,Food
+2026-06-13,Shopping - shirt,Myntra,1299,debit,Shopping
+2026-06-16,Groceries,DMart,1640,debit,Food
+2026-06-21,Education loan EMI,SBI,6500,debit,EMI/Loan
+2026-06-25,Recurring deposit,SBI RD,3000,debit,Other
+2026-06-28,Netflix subscription,Netflix,199,debit,Entertainment

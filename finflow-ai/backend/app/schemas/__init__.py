@@ -1,14 +1,15 @@
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
 from app.schemas.common import Page
 from app.schemas.finance import (
-    BudgetCreateRequest,
-    BudgetUpdateRequest,
     BudgetAlertResponse,
+    BudgetCreateRequest,
     BudgetResponse,
+    BudgetUpdateRequest,
     ChatHistoryResponse,
     ChatMessageCreateRequest,
     CopilotAskRequest,
     CopilotAskResponse,
+    CsvUploadResponse,
     DebtAccountCreateRequest,
     DebtAccountResponse,
     InvestmentProfileResponse,
@@ -17,7 +18,6 @@ from app.schemas.finance import (
     SavingsGoalResponse,
     TransactionCreateRequest,
     TransactionResponse,
-    CsvUploadResponse,
 )
 from app.schemas.user import UserResponse
 
