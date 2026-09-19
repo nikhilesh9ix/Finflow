@@ -112,7 +112,7 @@ the Vercel URL:
 
 1. Open the Vercel URL and register an account. (The local accounts are in your
    local MongoDB, not Atlas — the deployed app starts empty.)
-2. Import a CSV from `finflow-ai/data/seed/` on the Transactions page.
+2. Import a CSV from `data/seed/` or `data/demo-upload/` on the Transactions page.
 3. The dashboard should fill in, and monthly income should be derived from the
    salary credits in the file.
 

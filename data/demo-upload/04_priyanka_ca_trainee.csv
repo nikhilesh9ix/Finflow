@@ -1,0 +1,35 @@
+date,description,merchant,amount,type,category
+2026-06-01,Articleship stipend,Deloitte,21800,credit,Salary/Income
+2026-06-02,Metro pass,Namma Metro,1500,debit,Transport
+2026-06-05,Recurring deposit,HDFC Bank,5000,debit,Investments
+2026-06-06,CA exam course fees,ICAI,3500,debit,Education
+2026-06-08,Mobile recharge,Airtel,299,debit,Bills
+2026-06-11,Lunch with colleagues,Local restaurant,307,debit,Food
+2026-06-11,Weekend outing,Cafe,371,debit,Entertainment
+2026-06-18,Contribution at home,Family transfer,2822,debit,Other
+2026-06-21,Contribution at home,Family transfer,2328,debit,Other
+2026-06-24,Study books,Sapna Book House,741,debit,Education
+2026-06-26,Weekend outing,Cafe,639,debit,Entertainment
+2026-06-27,Study books,Sapna Book House,603,debit,Education
+2026-07-01,Articleship stipend,Deloitte,22200,credit,Salary/Income
+2026-07-02,Lunch with colleagues,Local restaurant,337,debit,Food
+2026-07-02,Metro pass,Namma Metro,1500,debit,Transport
+2026-07-05,Recurring deposit,HDFC Bank,5000,debit,Investments
+2026-07-06,CA exam course fees,ICAI,3500,debit,Education
+2026-07-08,Mobile recharge,Airtel,299,debit,Bills
+2026-07-10,Study books,Sapna Book House,1268,debit,Education
+2026-07-13,Lunch with colleagues,Local restaurant,183,debit,Food
+2026-07-18,Weekend outing,Cafe,644,debit,Entertainment
+2026-07-19,Contribution at home,Family transfer,3209,debit,Other
+2026-07-20,Study books,Sapna Book House,1089,debit,Education
+2026-07-22,Contribution at home,Family transfer,2007,debit,Other
+2026-08-01,Articleship stipend,Deloitte,21800,credit,Salary/Income
+2026-08-02,Metro pass,Namma Metro,1500,debit,Transport
+2026-08-03,Lunch with colleagues,Local restaurant,202,debit,Food
+2026-08-05,Recurring deposit,HDFC Bank,5000,debit,Investments
+2026-08-05,Study books,Sapna Book House,1015,debit,Education
+2026-08-06,CA exam course fees,ICAI,3500,debit,Education
+2026-08-08,Mobile recharge,Airtel,299,debit,Bills
+2026-08-10,Lunch with colleagues,Local restaurant,398,debit,Food
+2026-08-17,Weekend outing,Cafe,820,debit,Entertainment
+2026-08-18,Contribution at home,Family transfer,3127,debit,Other

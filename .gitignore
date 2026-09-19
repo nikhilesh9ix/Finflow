@@ -1,21 +1,27 @@
+# Secrets — never commit real environment files
 .env
-backend/.env
-finflow-ai/backend/.env
-backend/finflow.db
-finflow-ai/backend/finflow.db
-backend/.pytest_cache/
-**/__pycache__/
-frontend/dist/
-frontend/node_modules/
+.env.*
+!.env.example
+
+# Python
+__pycache__/
 *.pyc
 .venv/
-backend/.venv/
-.mypy_cache/
+venv/
 .pytest_cache/
-.claude/
+.mypy_cache/
+.ruff_cache/
 
-# Deck build tooling and QA output
+# Node / frontend build
 node_modules/
-qa_slides/
-patch_deck.py
+dist/
+
+# Local databases
+*.db
+*.sqlite3
+
+# Editor and tooling
+.claude/
+.vscode/
+.idea/
 *.bundle

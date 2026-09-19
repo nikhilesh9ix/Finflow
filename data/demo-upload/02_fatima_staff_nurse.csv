@@ -1,0 +1,44 @@
+date,description,merchant,amount,type,category
+2026-06-01,Salary credit,Manipal Hospitals,52200,credit,Salary/Income
+2026-06-03,Shared flat rent,Landlord,9450,debit,Bills
+2026-06-04,Groceries,Reliance Fresh,6050,debit,Food
+2026-06-04,Online shopping,Amazon,1814,debit,Shopping
+2026-06-05,Education loan EMI,Canara Bank,7950,debit,EMI/Loan
+2026-06-06,Recurring deposit,Canara Bank,4000,debit,Investments
+2026-06-08,Mobile recharge,Jio,399,debit,Bills
+2026-06-11,Uniform laundry,Local laundry,800,debit,Bills
+2026-06-16,Online shopping,Amazon,810,debit,Shopping
+2026-06-20,Canteen meals,Hospital canteen,441,debit,Food
+2026-06-20,Night shift allowance,Manipal Hospitals,6300,credit,Salary/Income
+2026-06-21,Money sent home,Family transfer,3234,debit,Other
+2026-06-22,Auto rides,Auto,457,debit,Transport
+2026-07-01,Salary credit,Manipal Hospitals,52100,credit,Salary/Income
+2026-07-03,Money sent home,Family transfer,4890,debit,Other
+2026-07-03,Shared flat rent,Landlord,9450,debit,Bills
+2026-07-04,Groceries,Reliance Fresh,6200,debit,Food
+2026-07-05,Education loan EMI,Canara Bank,7700,debit,EMI/Loan
+2026-07-06,Recurring deposit,Canara Bank,4000,debit,Investments
+2026-07-08,Mobile recharge,Jio,399,debit,Bills
+2026-07-09,Online shopping,Amazon,1873,debit,Shopping
+2026-07-11,Uniform laundry,Local laundry,800,debit,Bills
+2026-07-13,Auto rides,Auto,304,debit,Transport
+2026-07-15,Canteen meals,Hospital canteen,202,debit,Food
+2026-07-17,Canteen meals,Hospital canteen,314,debit,Food
+2026-07-20,Night shift allowance,Manipal Hospitals,6300,credit,Salary/Income
+2026-07-21,Online shopping,Amazon,1472,debit,Shopping
+2026-07-23,Auto rides,Auto,584,debit,Transport
+2026-07-23,Money sent home,Family transfer,5903,debit,Other
+2026-08-01,Salary credit,Manipal Hospitals,51900,credit,Salary/Income
+2026-08-03,Shared flat rent,Landlord,9650,debit,Bills
+2026-08-04,Groceries,Reliance Fresh,6100,debit,Food
+2026-08-05,Education loan EMI,Canara Bank,7850,debit,EMI/Loan
+2026-08-06,Recurring deposit,Canara Bank,4000,debit,Investments
+2026-08-08,Auto rides,Auto,220,debit,Transport
+2026-08-08,Mobile recharge,Jio,399,debit,Bills
+2026-08-11,Uniform laundry,Local laundry,800,debit,Bills
+2026-08-15,Money sent home,Family transfer,4354,debit,Other
+2026-08-18,Auto rides,Auto,296,debit,Transport
+2026-08-20,Night shift allowance,Manipal Hospitals,6400,credit,Salary/Income
+2026-08-23,Canteen meals,Hospital canteen,280,debit,Food
+2026-08-23,Online shopping,Amazon,1988,debit,Shopping
+2026-08-26,Canteen meals,Hospital canteen,121,debit,Food

@@ -11,8 +11,8 @@ services:
     plan: free
     region: singapore # closest region to India on the free plan
     branch: main
-    dockerfilePath: ./finflow-ai/backend/Dockerfile
-    dockerContext: ./finflow-ai/backend
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     healthCheckPath: /api/v1/health
     autoDeployTrigger: commit
     envVars:

@@ -1,0 +1,44 @@
+date,description,merchant,amount,type,category
+2026-06-01,Salary credit,State Bank of India,78100,credit,Salary/Income
+2026-06-03,House rent,Landlord,15850,debit,Bills
+2026-06-04,Groceries,DMart,9950,debit,Food
+2026-06-05,Car loan EMI,SBI Car Loans,14350,debit,EMI/Loan
+2026-06-06,Movie tickets,PVR,947,debit,Entertainment
+2026-06-06,Mutual fund SIP,Groww,8000,debit,Investments
+2026-06-07,PPF deposit,SBI,3000,debit,Investments
+2026-06-08,Movie tickets,PVR,1067,debit,Entertainment
+2026-06-09,Electricity bill,BESCOM,1700,debit,Bills
+2026-06-10,Broadband,Airtel Fiber,999,debit,Bills
+2026-06-12,Car fuel,Indian Oil,4200,debit,Transport
+2026-06-13,Clothing,Westside,3340,debit,Shopping
+2026-06-15,Clothing,Westside,1327,debit,Shopping
+2026-06-20,Dining out,Barbeque Nation,1469,debit,Food
+2026-06-24,Dining out,Barbeque Nation,1640,debit,Food
+2026-06-25,Pharmacy,Apollo Pharmacy,263,debit,Healthcare
+2026-07-01,Salary credit,State Bank of India,78200,credit,Salary/Income
+2026-07-03,House rent,Landlord,16100,debit,Bills
+2026-07-04,Dining out,Barbeque Nation,1036,debit,Food
+2026-07-04,Groceries,DMart,9800,debit,Food
+2026-07-05,Car loan EMI,SBI Car Loans,14250,debit,EMI/Loan
+2026-07-06,Mutual fund SIP,Groww,8100,debit,Investments
+2026-07-07,PPF deposit,SBI,3000,debit,Investments
+2026-07-09,Electricity bill,BESCOM,1700,debit,Bills
+2026-07-10,Broadband,Airtel Fiber,999,debit,Bills
+2026-07-12,Car fuel,Indian Oil,4200,debit,Transport
+2026-07-18,Pharmacy,Apollo Pharmacy,375,debit,Healthcare
+2026-07-20,Clothing,Westside,4214,debit,Shopping
+2026-07-25,Movie tickets,PVR,893,debit,Entertainment
+2026-08-01,Salary credit,State Bank of India,78000,credit,Salary/Income
+2026-08-03,House rent,Landlord,16000,debit,Bills
+2026-08-03,Movie tickets,PVR,689,debit,Entertainment
+2026-08-04,Groceries,DMart,9750,debit,Food
+2026-08-05,Car loan EMI,SBI Car Loans,14200,debit,EMI/Loan
+2026-08-05,Pharmacy,Apollo Pharmacy,290,debit,Healthcare
+2026-08-06,Mutual fund SIP,Groww,7850,debit,Investments
+2026-08-07,PPF deposit,SBI,3000,debit,Investments
+2026-08-08,Dining out,Barbeque Nation,2510,debit,Food
+2026-08-09,Electricity bill,BESCOM,1700,debit,Bills
+2026-08-10,Broadband,Airtel Fiber,999,debit,Bills
+2026-08-12,Car fuel,Indian Oil,4200,debit,Transport
+2026-08-21,Movie tickets,PVR,444,debit,Entertainment
+2026-08-22,Clothing,Westside,2429,debit,Shopping
